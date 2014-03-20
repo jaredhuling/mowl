@@ -1,0 +1,58 @@
+
+mowl.fit <- function(x, y, A, nfolds, seed = 123, oracle = NULL, verbose = FALSE) {
+  
+  thiscall <- match.call()
+  weights <- y * 3
+  model <- glmnet(x, A, family = "multinomial", weights = weights, alpha = 1)
+  
+  if (!is.null(oracle)) {
+    preds <- predict(model, newx = x, type = "class", s = model$lambda)
+    pct.correct <- apply(preds, 2, function(x) mean(x == oracle))
+    attr(pct.correct, "names") <- NULL
+  }
+  
+  aic.fit <- aic(model, y, A, weights)
+  aic.ind <- which.min(aic.fit)
+  
+  require(dismo)
+  set.seed(seed)
+  folds <- kfold(y, k = nfolds, by = A)
+  misclass <- values <- array(0, dim = c(nfolds, length(model$lambda)))
+  
+  for (f in 1:nfolds) {
+    x.train <- x[folds != f,]
+    A.train <- A[folds != f]
+    w.train <- weights[folds != f]
+    x.test <- x[folds == f,]
+    A.test <- A[folds == f]
+    y.test <- y[folds == f]
+    w.test <- weights[folds == f]
+    oracle.test <- oracle[folds == f]
+    
+    
+    gfit.fold <- glmnet(x.train, A.train, family = "multinomial", weights = w.train, 
+                        alpha = 1, lambda = model$lambda)
+    
+    for (i in 1:length(gfit.fold$lambda)) {
+      preds <- predict(gfit.fold, newx = x.test, type = "class", s = gfit.fold$lambda[i])
+      
+      values[f, i] <- value.func(A.test, preds, y.test)
+      misclass[f, i] <- weighted.mean(preds != A.test, w.test) #mean(preds != oracle.test)
+    }
+    if (verbose) cat("Fold = ", f, "\n")
+  }
+  class.ind <- which.min(colMeans(misclass))
+  value.ind <- which.max(colMeans(values))
+  ret <- list(model = model,
+              call = thiscall,
+              optimal.lambda = if(!is.null(oracle)) {model$lambda[which.max(pct.correct)]} else {NULL},
+              class.lambda = model$lambda[class.ind],
+              value.lambda = model$lambda[value.ind],
+              aic.lambda = model$lambda[aic.ind],
+              max.pct.correct = if(!is.null(oracle)) {max(pct.correct)} else {NULL},
+              class.pct.correct = if(!is.null(oracle)) {pct.correct[class.ind]} else {NULL},
+              value.pct.correct = if(!is.null(oracle)) {pct.correct[value.ind]} else {NULL},
+              aic.pct.correct = if(!is.null(oracle)) {pct.correct[aic.ind]} else {NULL})
+  class(ret) <- "owlfit"
+  ret
+}

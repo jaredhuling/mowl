@@ -1,0 +1,74 @@
+returnRule <- function(coefs) {
+  #returns function that evaluates treatment rule
+  if (length(coefs) == 4) {
+    function(x1 = NULL, x2 = NULL, solve = FALSE) {
+      c0 <- coefs[1]
+      c1 <- coefs[2]
+      c2 <- coefs[3]
+      c3 <- coefs[4]
+      #print(coefs)
+      if (solve) {
+        c(c0, c1, c2)
+      } else {
+        c0 + c1 * x1 + c2 * x2 + c3 * x1 * x2
+      }
+    }
+  } else if (length(coefs) == 3) {
+    function(x1 = NULL, x2 = NULL, solve = FALSE) {
+      c0 <- coefs[1]
+      c1 <- coefs[2]
+      c2 <- coefs[3]
+      #print(coefs)
+      if (solve) {
+        c(c0, c1, c2)
+      } else {
+        c0 + c1 * x1 + c2 * x2
+      }
+    }
+  } else {stop("Wrong number of rule coefficients")}
+}
+
+
+genTreatmentRules <- function(lst) {
+  stopifnot(class(lst) == "list")
+  rules <- vector(mode = "list", length = length(lst))
+  for (i in 1:length(lst)) {
+    rules[[i]] <- returnRule(lst[[i]])
+  }
+  names(rules) <- paste("rule", 0:(length(lst)-1), sep = "")
+  class(rules) <- unique(c(class(rules), "treatment.rules"))
+  rules
+}
+
+solve.treatment.rules <- function(rules) {
+  A <- array(0, dim = c(length(rules), 3))
+  B <- array(0, dim = c(length(rules), 3))
+  k <- 0
+  for (i in 1:(length(rules) - 1)) {
+    for (j in (i + 1):length(rules)) {
+      k <- k + 1
+      A[k, ] <- rules[[i]](solve = TRUE)
+      B[k, ] <- rules[[j]](solve = TRUE)
+    }
+  }
+  list(A = A, B = B)
+}
+
+
+genOracleTreatments <- function(x, rules) {
+  mat <- array(0, dim = c(nrow(x), length(rules)))
+  for (i in 1:ncol(mat)) {
+    mat[,i] <- rules[[i]](x[,1], x[,2])
+  }
+  apply(mat, 1, function(xx) as.character(which.max(xx)))
+}
+
+genTreatmentEffects <- function(x, A, rules) {
+  stopifnot(inherits(A, "factor"))
+  effects <- array(0, dim = c(length(A), length(rules)))
+  A.mm <- model.matrix( ~ A - 1)
+  for (i in 1:length(rules)) {
+    effects[,i] <- rules[[i]](x[,1], x[,2]) * A.mm[,i]
+  }
+  effects
+}
