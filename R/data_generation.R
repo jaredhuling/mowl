@@ -3,8 +3,7 @@ simulateOwlData <- function(n, p, rules, true.beta) {
   x <- matrix(rnorm(n * p), n, p)
   #x <- matrix(rbinom(n * p, 1, 0.05), n, p)
   
-  interaction <- if(length(rules[[1]]) == 4) {TRUE} else {FALSE}
-  
+  interaction <- if((rules[[1]][4] != 0) | (rules[[2]][4] != 0) | (rules[[3]][4] != 0)) {TRUE} else {FALSE}
   
   if (interaction) {
     x <- genInteractions(x)
@@ -12,12 +11,12 @@ simulateOwlData <- function(n, p, rules, true.beta) {
   
   A <- as.factor(sample(3, n, replace = TRUE))
   
-  treatment.effects <- genTreatmentEffects(x, A, treatment.rules)
+  treatment.effects <- genTreatmentEffects(x, A, rules)
   
   y <- rnorm(n) + rowSums(treatment.effects) + x[,3:(3 + length(true.beta) - 1)] %*% true.beta
   y <- y + abs(min(y))
   
-  oracle <- genOracleTreatments(x, treatment.rules)
+  oracle <- genOracleTreatments(x, rules)
   ret <- list(x = x, y = y, A = A, oracle = oracle, treatment.effects = treatment.effects)
   class(ret) <- "sim.owl.data"
   ret
