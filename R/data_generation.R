@@ -1,10 +1,8 @@
-simulateOwlData <- function(n, p, rules, true.beta) {
+simulateOwlData <- function(n, p, rules, true.beta, interaction) {
   
   x <- matrix(rnorm(n * p), n, p)
   #x <- matrix(rbinom(n * p, 1, 0.05), n, p)
-  
-  interaction <- if((rules[[1]][4] != 0) | (rules[[2]][4] != 0) | (rules[[3]][4] != 0)) {TRUE} else {FALSE}
-  
+    
   if (interaction) {
     x <- genInteractions(x)
   }
