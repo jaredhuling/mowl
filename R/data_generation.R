@@ -1,6 +1,7 @@
 simulateOwlData <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y = 1) {
   
   x <- matrix(rnorm(n * p, sd = sd.x), n, p)
+  colnames(x) <- paste("X", 1:p, sep = "")
   #x <- matrix(rbinom(n * p, 1, 0.05), n, p)
     
   if (interaction) {
@@ -23,11 +24,13 @@ simulateOwlData <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y 
 genInteractions <- function(x) {
   nobs <- nrow(x); nvars <- ncol(x)
   x.int <- array(0, dim = c(nobs, choose(nvars, 2)))
+  colnames(x.int) <- 1:choose(nvars, 2)
   k <- 0
   for (i in 1:(nvars - 1)) {
     for (j in (i + 1):nvars) {
       k <- k + 1
       x.int[,k] <- x[,i] * x[,j]
+      colnames(x.int)[k] <- paste(colnames(x)[i], colnames(x)[j], sep = ":")
     }
   }
   cbind(x, x.int)
