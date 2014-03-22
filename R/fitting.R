@@ -41,18 +41,50 @@ mowl.fit <- function(x, y, A, nfolds, seed = 123, oracle = NULL, verbose = FALSE
     }
     if (verbose) cat("Fold = ", f, "\n")
   }
+  optimal.ind <- which.max(pct.correct)
   class.ind <- which.min(colMeans(misclass))
   value.ind <- which.max(colMeans(values))
+  
+  d.vals <- computeD(model, y, A)
+  d.optimal <- d.vals[, optimal.ind]
+  d.value <- d.vals[, value.ind]
+  d.class <- d.vals[, class.ind]
+  d.aic <- d.vals[, aic.ind]
+  
   ret <- list(model = model,
               call = thiscall,
-              optimal.lambda = if(!is.null(oracle)) {model$lambda[which.max(pct.correct)]} else {NULL},
+              optimal.lambda = if(!is.null(oracle)) {model$lambda[optimal.ind]} else {NULL},
               class.lambda = model$lambda[class.ind],
               value.lambda = model$lambda[value.ind],
               aic.lambda = model$lambda[aic.ind],
               max.pct.correct = if(!is.null(oracle)) {max(pct.correct)} else {NULL},
               class.pct.correct = if(!is.null(oracle)) {pct.correct[class.ind]} else {NULL},
               value.pct.correct = if(!is.null(oracle)) {pct.correct[value.ind]} else {NULL},
-              aic.pct.correct = if(!is.null(oracle)) {pct.correct[aic.ind]} else {NULL})
+              aic.pct.correct = if(!is.null(oracle)) {pct.correct[aic.ind]} else {NULL},
+              d.optimal = d.optimal,
+              d.class = d.class,
+              d.value = d.value,
+              d.aic = d.aic)
   class(ret) <- "owlfit"
   ret
 }
+
+
+computeD <- function(obj, outcome, actual.treatments) {
+  ret <- array(0, dim = c(length(obj$beta), length(obj$lambda)))
+  rownames(ret) <- paste("d", 1:length(obj$beta))
+  for (i in 1:length(obj$beta)) {
+    predicted.treatments <- predict(obj, s = obj$lambda, type = "class")
+    agree.ind <- apply(predicted.treatments, 2, function(x) which(x == actual.treatments))
+    for (l in 1:length(lambda)) {
+      ret[i, j] <- mean(outcome[agree.ind]) - mean(outcome[-agree.ind])
+    }
+  }
+  ret
+}
+
+computeD.owlfit <- function(obj) {
+  
+}
+
+
