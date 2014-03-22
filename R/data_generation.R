@@ -1,6 +1,6 @@
-simulateOwlData <- function(n, p, rules, true.beta, interaction) {
+simulateOwlData <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y = 1) {
   
-  x <- matrix(rnorm(n * p), n, p)
+  x <- matrix(rnorm(n * p, sd = sd.x), n, p)
   #x <- matrix(rbinom(n * p, 1, 0.05), n, p)
     
   if (interaction) {
@@ -11,7 +11,7 @@ simulateOwlData <- function(n, p, rules, true.beta, interaction) {
   
   treatment.effects <- genTreatmentEffects(x, A, rules)
   
-  y <- rnorm(n) + rowSums(treatment.effects) + x[,3:(3 + length(true.beta) - 1)] %*% true.beta
+  y <- rnorm(n, sd = sd.y) + rowSums(treatment.effects) + x[,3:(3 + length(true.beta) - 1)] %*% true.beta
   y <- y + abs(min(y))
   
   oracle <- genOracleTreatments(x, rules)
