@@ -75,7 +75,7 @@ computeD <- function(obj, newx, outcome, actual.treatments) {
   rownames(ret) <- paste("d", 1:length(obj$beta))
   for (i in 1:length(obj$beta)) {
     predicted.treatments <- predict(obj, newx = newx, s = obj$lambda, type = "class")
-    agree.ind <- apply(predicted.treatments, 2, function(x) which(x == actual.treatments))
+    agree.ind <- apply(predicted.treatments, 2, function(x) which(x == actual.treatments & x == as.character(i)))
     for (l in 1:length(obj$lambda)) {
       ret[i, l] <- mean(outcome[agree.ind[[l]]]) - mean(outcome[-agree.ind[[l]]])
     }
@@ -84,7 +84,16 @@ computeD <- function(obj, newx, outcome, actual.treatments) {
 }
 
 computeD.owlfit <- function(obj) {
-  
+  ret <- array(0, dim = c(length(obj$model$beta), length(obj$model$lambda)))
+  rownames(ret) <- paste("d", 1:length(obj$model$beta))
+  for (i in 1:length(obj$model$beta)) {
+    predicted.treatments <- predict(obj$model, newx = newx, s = obj$lambda, type = "class")
+    agree.ind <- apply(predicted.treatments, 2, function(x) which(x == actual.treatments & x == as.character(i)))
+    for (l in 1:length(obj$model$lambda)) {
+      ret[i, l] <- mean(outcome[agree.ind[[l]]]) - mean(outcome[-agree.ind[[l]]])
+    }
+  }
+  ret
 }
 
 
