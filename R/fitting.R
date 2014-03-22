@@ -76,7 +76,7 @@ computeD <- function(obj, newx, outcome, actual.treatments) {
   for (i in 1:length(obj$beta)) {
     predicted.treatments <- predict(obj, newx = newx, s = obj$lambda, type = "class")
     agree.ind <- apply(predicted.treatments, 2, function(x) which(x == actual.treatments))
-    for (l in 1:length(lambda)) {
+    for (l in 1:length(obj$lambda)) {
       ret[i, j] <- mean(outcome[agree.ind]) - mean(outcome[-agree.ind])
     }
   }
