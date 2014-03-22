@@ -24,6 +24,8 @@ print.owlfit <- function(obj) {
   lams[4,2] <- obj$aic.pct.correct
   print(lams)
   
+  cat("\n")
+  
   dvals <- data.frame(array(0, dim = c(4, 4)))
   rownames(dvals) <- c("Optimal", "Class", "Value", "AIC")
   colnames(dvals) <- c("Lambda", "D1", "D2", "D3")
@@ -31,7 +33,7 @@ print.owlfit <- function(obj) {
   dvals[2, 2:4] <- obj$d.class
   dvals[3, 2:4] <- obj$d.value
   dvals[4, 2:4] <- obj$d.aic
-  dvals[1, 1] <- 0 #not yet
+  dvals[1, 1] <- obj$optimal.d.lambda
   dvals[2,1] <- obj$class.lambda
   dvals[3,1] <- obj$value.lambda
   dvals[4,1] <- obj$aic.lambda

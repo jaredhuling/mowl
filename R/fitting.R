@@ -57,6 +57,7 @@ mowl.fit <- function(x, y, A, nfolds, seed = 123, oracle = NULL, verbose = FALSE
   ret <- list(model = model,
               call = thiscall,
               optimal.lambda = if(!is.null(oracle)) {model$lambda[optimal.ind]} else {NULL},
+              optimal.d.lambda = if(!is.null(oracle)) {model$lambda[optimal.ind.d]} else {NULL},
               class.lambda = model$lambda[class.ind],
               value.lambda = model$lambda[value.ind],
               aic.lambda = model$lambda[aic.ind],
