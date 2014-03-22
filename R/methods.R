@@ -23,12 +23,12 @@ print.owlfit <- function(obj) {
   lams[4,1] <- obj$aic.lambda
   lams[4,2] <- obj$aic.pct.correct
   print(lams)
-  cat("\n\n Optimal d")
+  cat("\n\n Optimal d \n")
   print(obj$d.optimal)
-  cat("\n\n Misclassification Criterion d")
+  cat("\n\n Misclassification Criterion d \n")
   print(obj$d.class)
-  cat("\n\n Value Function Criterion d")
+  cat("\n\n Value Function Criterion d \n")
   print(obj$d.value)
-  cat("\n\n AIC Criterion d")
+  cat("\n\n AIC Criterion d \n")
   print(obj$d.aic)
 }
