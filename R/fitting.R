@@ -45,8 +45,11 @@ mowl.fit <- function(x, y, A, nfolds, seed = 123, oracle = NULL, verbose = FALSE
   class.ind <- which.min(colMeans(misclass))
   value.ind <- which.max(colMeans(values))
   
+  
   d.vals <- computeD(model, x, y, A)
-  d.optimal <- d.vals[, optimal.ind]
+  optimal.ind.d <- which.max(colSums(d.vals))
+  
+  d.optimal <- d.vals[, optimal.ind.d]
   d.value <- d.vals[, value.ind]
   d.class <- d.vals[, class.ind]
   d.aic <- d.vals[, aic.ind]
