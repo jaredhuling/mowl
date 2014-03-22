@@ -45,7 +45,7 @@ mowl.fit <- function(x, y, A, nfolds, seed = 123, oracle = NULL, verbose = FALSE
   class.ind <- which.min(colMeans(misclass))
   value.ind <- which.max(colMeans(values))
   
-  d.vals <- computeD(model, y, A)
+  d.vals <- computeD(model, x, y, A)
   d.optimal <- d.vals[, optimal.ind]
   d.value <- d.vals[, value.ind]
   d.class <- d.vals[, class.ind]
@@ -70,11 +70,11 @@ mowl.fit <- function(x, y, A, nfolds, seed = 123, oracle = NULL, verbose = FALSE
 }
 
 
-computeD <- function(obj, outcome, actual.treatments) {
+computeD <- function(obj, newx, outcome, actual.treatments) {
   ret <- array(0, dim = c(length(obj$beta), length(obj$lambda)))
   rownames(ret) <- paste("d", 1:length(obj$beta))
   for (i in 1:length(obj$beta)) {
-    predicted.treatments <- predict(obj, s = obj$lambda, type = "class")
+    predicted.treatments <- predict(obj, newx = newx, s = obj$lambda, type = "class")
     agree.ind <- apply(predicted.treatments, 2, function(x) which(x == actual.treatments))
     for (l in 1:length(lambda)) {
       ret[i, j] <- mean(outcome[agree.ind]) - mean(outcome[-agree.ind])
