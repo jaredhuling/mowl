@@ -1,9 +1,22 @@
 
-mowl.fit <- function(x, y, A, nfolds, seed = 123, oracle = NULL, verbose = FALSE) {
+mowl.fit <- function(x, y, A, groups = NULL, nfolds, seed = 123, oracle = NULL, verbose = FALSE) {
   
   thiscall <- match.call()
   weights <- y * 3
-  model <- glmnet(x, A, family = "multinomial", weights = weights, alpha = 1)
+  nvars <- ncol(x)
+  nobs <- nrow(x)
+  K <- length(unique(A))
+  
+  if (is.null(groups)) {
+    model <- glmnet(x, A, family = "multinomial", weights = weights, alpha = 1)
+  } else {
+    gw <- numeric(length = nvars); gw[groups] <- sqrt(K) * (p - length(groups))
+    pw <- array(1, dim = c(K, nvars)); pw[,groups] <- 0
+    lambda <- msgl.lambda.seq(x, A, sampleWeights = weights, groupWeights = gw, 
+                              parameterWeights = pw, alpha = .5, d = 100, lambda.min = 1e-3)
+    model <- msgl(x, classes = A, sampleWeights = weights, groupWeights = gw, 
+                  parameterWeights = pw, alpha = 0.5, lambda = lambda)
+  }
   
   if (!is.null(oracle)) {
     preds <- predict(model, newx = x, type = "class", s = model$lambda)

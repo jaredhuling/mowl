@@ -7,4 +7,4 @@ Author: Jared Huling
 Maintainer: Jared Huling <jaredhuling@gmail.com>
 Description: Later
 License: GPL3.0
-Depends: glmnet, ggplot2, dismo
+Depends: glmnet, msgl, ggplot2, dismo
