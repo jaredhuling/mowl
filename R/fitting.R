@@ -12,10 +12,10 @@ mowl.fit <- function(x, y, A, groups = NULL, nfolds, seed = 123, oracle = NULL, 
   } else {
     gw <- numeric(length = nvars); gw[groups] <- sqrt(K) * (p - length(groups))
     pw <- array(1, dim = c(K, nvars)); pw[,groups] <- 0
-    lambda <- msgl.lambda.seq(x, A, sampleWeights = weights, groupWeights = gw, 
-                              parameterWeights = pw, alpha = .5, d = 100, lambda.min = 1e-3)
+    msgl.lambda <- msgl.lambda.seq(x, A, sampleWeights = weights, groupWeights = gw, 
+                                   parameterWeights = pw, alpha = .5, d = 100, lambda.min = 1e-3)
     model <- msgl(x, classes = A, sampleWeights = weights, groupWeights = gw, 
-                  parameterWeights = pw, alpha = 0.5, lambda = lambda)
+                  parameterWeights = pw, alpha = 0.5, lambda = msgl.lambda)
   }
   
   if (!is.null(oracle)) {
@@ -28,7 +28,11 @@ mowl.fit <- function(x, y, A, groups = NULL, nfolds, seed = 123, oracle = NULL, 
     attr(pct.correct, "names") <- NULL
   }
   
-  aic.fit <- aic(model, y, A, weights)
+  if (is.null(groups)) {
+    aic.fit <- aic(model, y, A, weights)
+  } else {
+    aic.fit <- aic.msgl(model)
+  }
   aic.ind <- which.min(aic.fit)
   
   require(dismo)
@@ -46,13 +50,20 @@ mowl.fit <- function(x, y, A, groups = NULL, nfolds, seed = 123, oracle = NULL, 
     w.test <- weights[folds == f]
     oracle.test <- oracle[folds == f]
     
+    if (is.null(groups)) {
+      fit.fold <- glmnet(x.train, A.train, family = "multinomial", weights = w.train, 
+                          alpha = 1, lambda = model$lambda)
+    } else {
+      fit.fold <- msgl(x.train, classes = A.train, sampleWeights = weights, groupWeights = gw, 
+                       parameterWeights = pw, alpha = 0.5, lambda = msgl.lambda)
+    }
     
-    gfit.fold <- glmnet(x.train, A.train, family = "multinomial", weights = w.train, 
-                        alpha = 1, lambda = model$lambda)
-    
-    for (i in 1:length(gfit.fold$lambda)) {
-      preds <- predict(gfit.fold, newx = x.test, type = "class", s = gfit.fold$lambda[i])
-      
+    for (i in 1:length(fit.fold$lambda)) {
+      if (is.null(groups)) {
+        preds <- predict(fit.fold, newx = x.test, type = "class", s = gfit.fold$lambda[i])
+      } else {
+        preds <- predict(fit.fold, x = x.test)$classes
+      }
       values[f, i] <- value.func(A.test, preds, y.test)
       misclass[f, i] <- weighted.mean(preds != A.test, w.test) #mean(preds != oracle.test)
     }
