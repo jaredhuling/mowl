@@ -9,6 +9,7 @@ value.func <- function(A, predicted, y) {
 logLikNull <- function(y, A, weights) {
   require(mlogit)
   mdat <- data.frame(A = A, weights = weights)
+  rownames(mdat) <- 1:length(weights)
   mdat2 <- mlogit.data(mdat, choice = "A", shape = "wide")
   mfit <- mlogit(A ~ 1, weights = weights, data = mdat2)
   logLik(mfit)[1]

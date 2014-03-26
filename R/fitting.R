@@ -19,7 +19,11 @@ mowl.fit <- function(x, y, A, groups = NULL, nfolds, seed = 123, oracle = NULL, 
   }
   
   if (!is.null(oracle)) {
-    preds <- predict(model, newx = x, type = "class", s = model$lambda)
+    if (is.null(groups)) {
+      preds <- predict(model, newx = x, type = "class", s = model$lambda)
+    } else {
+      preds <- predict(model, x = x)$classes
+    }
     pct.correct <- apply(preds, 2, function(x) mean(x == oracle))
     attr(pct.correct, "names") <- NULL
   }
