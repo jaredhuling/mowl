@@ -60,7 +60,7 @@ mowl.fit <- function(x, y, A, groups = NULL, nfolds, seed = 123, oracle = NULL, 
     
     for (i in 1:length(fit.fold$lambda)) {
       if (is.null(groups)) {
-        preds <- predict(fit.fold, newx = x.test, type = "class", s = gfit.fold$lambda[i])
+        preds <- predict(fit.fold, newx = x.test, type = "class", s = fit.fold$lambda[i])
       } else {
         preds <- predict(fit.fold, x = x.test)$classes
       }
