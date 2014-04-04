@@ -44,10 +44,11 @@ simulateOwlData2 <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y
   n <- as.integer(n)
   p <- as.integer(p)
   x <- matrix(rnorm(n * num.contin, sd = sd.x), n, num.contin)
-  colnames(x) <- paste("X", 1:p, sep = "")
+  
   #x <- matrix(rbinom(n * p, 1, 0.05), n, p)
   x.factors <- sapply(factor.levels, function(x) sample.int(x, n, replace = TRUE))
   x <- cbind(x, x.factors)
+  colnames(x) <- paste("X", 1:p, sep = "")
   
   if (interaction) {
     x <- model.matrix(~ -1 + . + .*., data = x)
