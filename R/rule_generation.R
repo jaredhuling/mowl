@@ -30,7 +30,7 @@ returnRule <- function(coefs) {
 
 returnRule2 <- function(lst) {
   #returns function that evaluates treatment rule
-
+  print(lst)
   function(x) {
     
     print(lst)
