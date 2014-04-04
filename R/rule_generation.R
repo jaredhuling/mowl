@@ -46,7 +46,7 @@ genTreatmentRules2 <- function(lst) {
   stopifnot(class(lst) == "list")
   rules <- vector(mode = "list", length = length(lst))
   for (i in 1:length(lst)) {
-    rules[[i]] <- returnRule(lst[[i]])
+    rules[[i]] <- returnRule2(lst[[i]])
   }
   names(rules) <- paste("rule", 0:(length(lst)-1), sep = "")
   class(rules) <- unique(c(class(rules), "treatment.rules"))
