@@ -46,7 +46,7 @@ simulateOwlData2 <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y
   x <- matrix(rnorm(n * num.contin, sd = sd.x), n, num.contin)
   
   #x <- matrix(rbinom(n * p, 1, 0.05), n, p)
-  x.factors <- sapply(factor.levels, function(x) sample.int(x, n, replace = TRUE))
+  x.factors <- sapply(factor.levels, function(x) as.factor(sample.int(x, n, replace = TRUE)))
   x <- data.frame(cbind(x, x.factors))
   colnames(x) <- paste("X", 1:p, sep = "")
   
