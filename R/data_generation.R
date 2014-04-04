@@ -39,16 +39,24 @@ simulateOwlData <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y 
 simulateOwlData2 <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y = 1,
                             binary.outcome = FALSE, num.factors = 0L, factor.levels = rep(3, num.factors)) {
   
+  stopifnot(all(num.factors > 1))
   num.contin <- p - num.factors
   num.factors <- as.integer(num.factors)
   n <- as.integer(n)
   p <- as.integer(p)
   x <- matrix(rnorm(n * num.contin, sd = sd.x), n, num.contin)
+  colnames(x) <- paste("C.X", 1:num.contin, sep = "")
+  
+  num.binary <- sum(factor.levels == 2)
   
   #x <- matrix(rbinom(n * p, 1, 0.05), n, p)
   x.factors <- sapply(factor.levels, function(x) as.factor(sample.int(x, n, replace = TRUE)))
+  colnames(x.factors) <- paste("F.X", 1:num.factors, sep = "")
+  colnames(x.factors)[which(factor.levels == 2)] <- paste("Bin.X", 1:num.binary, sep = "")
+  colnames(x.factors)[which(factor.levels != 2)] <- paste("F.X", 1:(num.factors - num.binary), sep = "")
+  
   x <- data.frame(x, x.factors)
-  colnames(x) <- paste("X", 1:p, sep = "")
+  
   
   if (interaction) {
     x <- model.matrix(~ -1 + . + .*., data = x)
