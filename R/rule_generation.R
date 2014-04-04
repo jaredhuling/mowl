@@ -28,6 +28,30 @@ returnRule <- function(coefs) {
   } else {stop("Wrong number of rule coefficients")}
 }
 
+returnRule2 <- function(lst) {
+  #returns function that evaluates treatment rule
+
+  function(x) {
+    
+    ret <- x[,lst$var.idx] %*% lst$coefs
+    int <- rowSums(apply(lst$int.idx, 2, function(idx) lst$int.coefs * x[,idx[1]] * x[,idx[2]]))
+    ret + int
+    
+  }
+
+}
+
+
+genTreatmentRules2 <- function(lst) {
+  stopifnot(class(lst) == "list")
+  rules <- vector(mode = "list", length = length(lst))
+  for (i in 1:length(lst)) {
+    rules[[i]] <- returnRule(lst[[i]])
+  }
+  names(rules) <- paste("rule", 0:(length(lst)-1), sep = "")
+  class(rules) <- unique(c(class(rules), "treatment.rules"))
+  rules
+}
 
 genTreatmentRules <- function(lst) {
   stopifnot(class(lst) == "list")
@@ -63,6 +87,14 @@ genOracleTreatments <- function(x, rules) {
   apply(mat, 1, function(xx) as.character(which.max(xx)))
 }
 
+genOracleTreatments2 <- function(x, rules) {
+  mat <- array(0, dim = c(nrow(x), length(rules)))
+  for (i in 1:ncol(mat)) {
+    mat[,i] <- rules[[i]](x)
+  }
+  apply(mat, 1, function(xx) as.character(which.max(xx)))
+}
+
 genTreatmentEffects <- function(x, A, rules) {
   stopifnot(inherits(A, "factor"))
   effects <- array(0, dim = c(length(A), length(rules)))
@@ -72,3 +104,14 @@ genTreatmentEffects <- function(x, A, rules) {
   }
   effects
 }
+
+genTreatmentEffects2 <- function(x, A, rules) {
+  stopifnot(inherits(A, "factor"))
+  effects <- array(0, dim = c(length(A), length(rules)))
+  A.mm <- model.matrix( ~ A - 1)
+  for (i in 1:length(rules)) {
+    effects[,i] <- rules[[i]](x) * A.mm[,i]
+  }
+  effects
+}
+
