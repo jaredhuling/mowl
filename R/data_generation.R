@@ -52,16 +52,16 @@ simulateOwlData2 <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y
   #x <- matrix(rbinom(n * p, 1, 0.05), n, p)
   x.factors <- sapply(factor.levels, function(x) as.factor(sample.int(x, n, replace = TRUE)))
   colnames(x.factors) <- paste("F.X", 1:num.factors, sep = "")
-  colnames(x.factors)[which(factor.levels == 2)] <- paste("Bin.X", 1:num.binary, sep = "")
-  colnames(x.factors)[which(factor.levels != 2)] <- paste("F.X", 1:(num.factors - num.binary), sep = "")
+  colnames(x.factors)[which(factor.levels == 2)] <- paste(paste("Bin.X", 1:num.binary, sep = ""), ".", sep = "")
+  colnames(x.factors)[which(factor.levels != 2)] <- paste(paste("F.X", 1:(num.factors - num.binary), sep = ""), ".", sep = "")
   
   x <- data.frame(x, x.factors)
   
   
   if (interaction) {
-    x <- model.matrix(~ -1 + . + .*., data = x)
+    x <- model.matrix(~ . + .*., data = x)[,-1]
   } else {
-    x <- model.matrix(~ -1 + ., data = x)
+    x <- model.matrix(~ ., data = x)[,-1]
   }
   
   A <- as.factor(sample(3, n, replace = TRUE))
