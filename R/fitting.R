@@ -64,14 +64,19 @@ mowl.fit <- function(x, y, A, groups = NULL, nfolds, seed = 123, oracle = NULL, 
                        grouping = grouping, parameterWeights = pw, alpha = 0.5, lambda = msgl.lambda)
     }
     
+    if (!is.null(groups)) {
+      preds <- predict(fit.fold, x = x.test)$classes
+    }
+    
     for (i in 1:length(fit.fold$lambda)) {
       if (is.null(groups)) {
         preds <- predict(fit.fold, newx = x.test, type = "class", s = fit.fold$lambda[i])
+        values[f, i] <- value.func(A.test, preds, y.test)
+        misclass[f, i] <- weighted.mean(preds != A.test, w.test) #mean(preds != oracle.test)
       } else {
-        preds <- predict(fit.fold, x = x.test)$classes
+        values[f, i] <- value.func(A.test, preds[,i], y.test)
+        misclass[f, i] <- weighted.mean(preds[,i] != A.test, w.test) #mean(preds != oracle.test)
       }
-      values[f, i] <- value.func(A.test, preds, y.test)
-      misclass[f, i] <- weighted.mean(preds != A.test, w.test) #mean(preds != oracle.test)
     }
     if (verbose) cat("Fold = ", f, "\n")
   }
@@ -114,7 +119,7 @@ computeD <- function(obj, newx, outcome, actual.treatments) {
   rownames(ret) <- paste("d", 1:K)
   for (i in 1:K) {
     if (inherits(obj, "msgl")) {
-      predict(model, x = x)$classes
+      predicted.treatments <- predict(model, x = x)$classes
     } else {
       predicted.treatments <- predict(obj, newx = newx, s = obj$lambda, type = "class")
     }
