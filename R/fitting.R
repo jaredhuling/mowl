@@ -109,10 +109,15 @@ mowl.fit <- function(x, y, A, groups = NULL, nfolds, seed = 123, oracle = NULL, 
 
 
 computeD <- function(obj, newx, outcome, actual.treatments) {
-  ret <- array(0, dim = c(length(obj$beta), length(obj$lambda)))
-  rownames(ret) <- paste("d", 1:length(obj$beta))
-  for (i in 1:length(obj$beta)) {
-    predicted.treatments <- predict(obj, newx = newx, s = obj$lambda, type = "class")
+  K <- if (inherits(obj, "msgl")){obj$beta[[1]]@Dim[1]} else {length(obj$beta)}
+  ret <- array(0, dim = c(K, length(obj$lambda)))
+  rownames(ret) <- paste("d", 1:K)
+  for (i in 1:K) {
+    if (inherits(obj, "msgl")) {
+      predict(model, x = x)$classes
+    } else {
+      predicted.treatments <- predict(obj, newx = newx, s = obj$lambda, type = "class")
+    }
     agree.ind <- apply(predicted.treatments, 2, function(x) which(x == actual.treatments & x == as.character(i)))
     for (l in 1:length(obj$lambda)) {
       ret[i, l] <- mean(outcome[agree.ind[[l]]]) - mean(outcome[-agree.ind[[l]]])
@@ -122,10 +127,15 @@ computeD <- function(obj, newx, outcome, actual.treatments) {
 }
 
 computeD.owlfit <- function(obj) {
-  ret <- array(0, dim = c(length(obj$model$beta), length(obj$model$lambda)))
-  rownames(ret) <- paste("d", 1:length(obj$model$beta))
-  for (i in 1:length(obj$model$beta)) {
-    predicted.treatments <- predict(obj$model, newx = newx, s = obj$lambda, type = "class")
+  K <- if (inherits(obj$model, "msgl")){obj$model$beta[[1]]@Dim[1]} else {length(obj$model$beta)}
+  ret <- array(0, dim = c(K, length(obj$model$lambda)))
+  rownames(ret) <- paste("d", 1:K)
+  for (i in 1:K) {
+    if (inherits(obj$model, "msgl")) {
+      predict(model, x = x)$classes
+    } else {
+      predicted.treatments <- predict(obj$model, newx = newx, s = obj$model$lambda, type = "class")
+    }
     agree.ind <- apply(predicted.treatments, 2, function(x) which(x == actual.treatments & x == as.character(i)))
     for (l in 1:length(obj$model$lambda)) {
       ret[i, l] <- mean(outcome[agree.ind[[l]]]) - mean(outcome[-agree.ind[[l]]])
