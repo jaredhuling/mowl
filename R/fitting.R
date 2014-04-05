@@ -61,7 +61,7 @@ mowl.fit <- function(x, y, A, groups = NULL, nfolds, seed = 123, oracle = NULL, 
                           alpha = 1, lambda = model$lambda)
     } else {
       fit.fold <- msgl(x.train, classes = A.train, sampleWeights = weights, groupWeights = gw, 
-                       parameterWeights = pw, alpha = 0.5, lambda = msgl.lambda)
+                       grouping = grouping, parameterWeights = pw, alpha = 0.5, lambda = msgl.lambda)
     }
     
     for (i in 1:length(fit.fold$lambda)) {
