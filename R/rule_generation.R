@@ -33,7 +33,7 @@ returnRule2 <- function(lst) {
   print(lst)
   function(x) {
     
-    print(lst)
+    #print(lst)
     ret <- x[,lst$var.idx] %*% lst$coefs
     int <- rowSums(apply(lst$int.idx, 2, function(idx) lst$int.coefs * x[,idx[1]] * x[,idx[2]]))
     ret + int
