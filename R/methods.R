@@ -5,7 +5,11 @@ predict.owlfit <- function(object, type.measure = c("class", "value", "aic", "de
                 value = object$value.lambda,
                 aic = object$aic.lambda,
                 optimal = object$optimal.lambda)
-  predict(object$model, s = lam, ...)
+  if (inherits(object$model, "msgl")) {
+    predict(object$model, ...)$classes[,which(object$model$lambda == lam)]
+  } else {
+    predict(object$model, s = lam, ...)
+  }
 }
 
 print.owlfit <- function(obj) {
@@ -40,3 +44,17 @@ print.owlfit <- function(obj) {
   print(dvals)
   
 }
+
+
+plot.owlfit <- function(obj) {
+  K <- nrow(obj$d.vals)
+  nonan <- obj$d.vals; nonan[is.nan(nonan)] <- mean(nonan[!is.nan(nonan)])
+  ylims <- c(min(na.omit(obj$d.vals))-0.25 * sd(nonan[!is.nan(nonan)]), max(na.omit(obj$d.vals)+0.25 * sd(nonan[!is.nan(nonan)])))
+  cols <- c("red", "green", "yellow", "purple", "orange", colors()[sample.int(400, K)])
+  plot(x = 1:length(obj$model$lambda), y = obj$d.vals[1,], type = "l", col = "blue", ylim = ylims)
+  for (i in 2:K) {
+    lines(x = 1:length(obj$model$lambda), y = obj$d.vals[i,], col = cols[i-1])
+  }
+  print(ylims)
+}
+

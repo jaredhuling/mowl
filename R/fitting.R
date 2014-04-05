@@ -112,7 +112,10 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, seed = 
               d.aic = d.aic,
               values = values,
               misclass = misclass,
-              d.vals = d.vals)
+              d.vals = d.vals,
+              class.lambda.idx = class.ind,
+              value.lambda.idx = value.ind,
+              aid.lambda.idx = aic.ind)
   class(ret) <- "owlfit"
   ret
 }
@@ -121,13 +124,15 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, seed = 
 computeD <- function(obj, newx, outcome, actual.treatments) {
   K <- if (inherits(obj, "msgl")){obj$beta[[1]]@Dim[1]} else {length(obj$beta)}
   ret <- array(0, dim = c(K, length(obj$lambda)))
-  rownames(ret) <- paste("d", 1:K)
+  rownames(ret) <- paste("d", 1:K, sep="")
+  
   if (inherits(obj, "msgl")) {
     predicted.treatments <- predict(obj, x = newx)$classes
     dimnames(predicted.treatments) <- NULL
   } else {
     predicted.treatments <- predict(obj, newx = newx, s = obj$lambda, type = "class")
   }
+  
   for (i in 1:K) {
     agree.ind <- apply(predicted.treatments, 2, function(x) which(x == actual.treatments & x == as.character(i)))
     for (l in 1:length(obj$lambda)) {
@@ -136,6 +141,44 @@ computeD <- function(obj, newx, outcome, actual.treatments) {
   }
   ret
 }
+
+computeDfromPreds <- function(preds, outcome, actual.treatments) {
+  K <- if (inherits(obj, "msgl")){obj$beta[[1]]@Dim[1]} else {length(obj$beta)}
+
+  ret <- numeric(length = K)
+  names(ret) <- paste("d", 1:K, sep="")
+  names(preds) <- NULL
+  dimnames(preds) <- NULL
+  
+  for (i in 1:K) {
+    agree.ind <- which(preds == actual.treatments & preds == as.character(i))
+    ret[i] <- mean(outcome[agree.ind]) - mean(outcome[-agree.ind])
+  }
+  ret
+}
+
+computeDpctCorrect <- function(obj, newx, outcome, actual.treatments, oracle) {
+  K <- if (inherits(obj, "msgl")){obj$beta[[1]]@Dim[1]} else {length(obj$beta)}
+  ret <- array(0, dim = c(K, length(obj$lambda)))
+  rownames(ret) <- paste("d", 1:K, sep="")
+  if (inherits(obj, "msgl")) {
+    predicted.treatments <- predict(obj, x = newx)$classes
+    dimnames(predicted.treatments) <- NULL
+  } else {
+    predicted.treatments <- predict(obj, newx = newx, s = obj$lambda, type = "class")
+  }
+  
+  pct.correct <- apply(predicted.treatments, 2, function(x) mean(x == oracle))
+  
+  for (i in 1:K) {
+    agree.ind <- apply(predicted.treatments, 2, function(x) which(x == actual.treatments & x == as.character(i)))
+    for (l in 1:length(obj$lambda)) {
+      ret[i, l] <- mean(outcome[agree.ind[[l]]]) - mean(outcome[-agree.ind[[l]]])
+    }
+  }
+  list(d.vals = ret, pct.correct = pct.correct)
+}
+
 
 computeD.owlfit <- function(obj) {
   K <- if (inherits(obj$model, "msgl")){obj$model$beta[[1]]@Dim[1]} else {length(obj$model$beta)}
