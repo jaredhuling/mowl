@@ -10,6 +10,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, seed = 
   if (is.null(groups)) {
     model <- glmnet(x, A, family = "multinomial", weights = weights, alpha = 1)
   } else {
+    config <- msgl.algorithm.config(verbose = FALSE)
     GG <- unique(groups)
     n.groups <- length(GG)
     GG.nonzero <- which(!is.na(GG))
@@ -21,7 +22,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, seed = 
     msgl.lambda <- msgl.lambda.seq(x, A, sampleWeights = weights, groupWeights = gw, grouping = grouping,
                                    parameterWeights = pw, alpha = 0.5, d = 100, lambda.min = 1e-3)
     model <- msgl(x, classes = A, sampleWeights = weights, groupWeights = gw, grouping = grouping,
-                  parameterWeights = pw, alpha = 0.5, lambda = msgl.lambda)
+                  parameterWeights = pw, alpha = 0.5, lambda = msgl.lambda, algorithm.config = config)
   }
   
   if (!is.null(oracle)) {
@@ -61,7 +62,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, seed = 
                           alpha = 1, lambda = model$lambda)
     } else {
       fit.fold <- msgl(x.train, classes = A.train, sampleWeights = w.train, groupWeights = gw, 
-                       grouping = grouping, parameterWeights = pw, alpha = 0.5, lambda = msgl.lambda)
+                       grouping = grouping, parameterWeights = pw, alpha = 0.5, lambda = msgl.lambda, algorithm.config = config)
     }
     
     if (!is.null(groups)) {
@@ -115,7 +116,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, seed = 
               d.vals = d.vals,
               class.lambda.idx = class.ind,
               value.lambda.idx = value.ind,
-              aid.lambda.idx = aic.ind)
+              aic.lambda.idx = aic.ind)
   class(ret) <- "owlfit"
   ret
 }
