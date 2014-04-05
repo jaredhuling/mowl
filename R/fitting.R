@@ -122,7 +122,7 @@ computeD <- function(obj, newx, outcome, actual.treatments) {
   rownames(ret) <- paste("d", 1:K)
   for (i in 1:K) {
     if (inherits(obj, "msgl")) {
-      predicted.treatments <- predict(model, x = x)$classes
+      predicted.treatments <- predict(obj, x = x)$classes
     } else {
       predicted.treatments <- predict(obj, newx = newx, s = obj$lambda, type = "class")
     }
@@ -140,7 +140,7 @@ computeD.owlfit <- function(obj) {
   rownames(ret) <- paste("d", 1:K)
   for (i in 1:K) {
     if (inherits(obj$model, "msgl")) {
-      predict(model, x = x)$classes
+      predict(obj$model, x = x)$classes
     } else {
       predicted.treatments <- predict(obj$model, newx = newx, s = obj$model$lambda, type = "class")
     }
