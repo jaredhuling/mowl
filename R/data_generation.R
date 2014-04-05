@@ -60,8 +60,21 @@ simulateOwlData2 <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y
   
   if (interaction) {
     x <- model.matrix(~ . + .*., data = x)[,-1]
+    #non.int <- colnames(x)[-grep(":", colnames(x))]
+    all.uniques <- gsub("[\\.]([0-9]+)", "", colnames(x))
+    contins <- grep("^(C|Bin)\\.X[0-9]+[^F]*$[^:]*$", all.uniques, perl = TRUE)
+    #uniques <- gsub("[\\.]([0-9]+)", "", non.int)
+    #factors.non.int <- colnames(x)[-grep(":|[C]|[Bin]", colnames(x))]
+    grouping <- rep(NA, ncol(x))
+    uni <- unique(all.uniques[-contins])
+    grouping[-contins] <- match(all.uniques[-contins], uni)
   } else {
     x <- model.matrix(~ ., data = x)[,-1]
+    all.uniques <- gsub("[\\.]([0-9]+)", "", colnames(x))
+    contins <- grep("^(C|Bin)\\.X[0-9]+", all.uniques, perl = TRUE)
+    grouping <- rep(NA, ncol(x))
+    uni <- unique(all.uniques[-contins])
+    grouping[-contins] <- match(all.uniques[-contins], uni)
   }
   
   A <- as.factor(sample(3, n, replace = TRUE))
@@ -78,7 +91,7 @@ simulateOwlData2 <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y
   }
   
   oracle <- genOracleTreatments2(x, rules)
-  ret <- list(x = x, y = y, A = A, oracle = oracle, treatment.effects = treatment.effects)
+  ret <- list(x = x, y = y, A = A, oracle = oracle, treatment.effects = treatment.effects, grouping = grouping)
   class(ret) <- "sim.owl.data"
   ret
 }
