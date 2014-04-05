@@ -66,6 +66,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, seed = 
     
     if (!is.null(groups)) {
       preds <- predict(fit.fold, x = x.test)$classes
+      dimnames(preds) <- NULL
     }
     
     for (i in 1:length(fit.fold$lambda)) {
@@ -74,8 +75,9 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, seed = 
         values[f, i] <- value.func(A.test, preds, y.test)
         misclass[f, i] <- weighted.mean(preds != A.test, w.test) #mean(preds != oracle.test)
       } else {
-        values[f, i] <- value.func(A.test, preds[,i], y.test)
-        misclass[f, i] <- weighted.mean(preds[,i] != A.test, w.test) #mean(preds != oracle.test)
+        preds.i <- drop(preds[,i])
+        values[f, i] <- value.func(A.test, preds.i, y.test)
+        misclass[f, i] <- weighted.mean(preds.i != A.test, w.test) #mean(preds != oracle.test)
       }
     }
     if (verbose) cat("Fold = ", f, "\n")
@@ -120,12 +122,13 @@ computeD <- function(obj, newx, outcome, actual.treatments) {
   K <- if (inherits(obj, "msgl")){obj$beta[[1]]@Dim[1]} else {length(obj$beta)}
   ret <- array(0, dim = c(K, length(obj$lambda)))
   rownames(ret) <- paste("d", 1:K)
+  if (inherits(obj, "msgl")) {
+    predicted.treatments <- predict(obj, x = newx)$classes
+    dimnames(predicted.treatments) <- NULL
+  } else {
+    predicted.treatments <- predict(obj, newx = newx, s = obj$lambda, type = "class")
+  }
   for (i in 1:K) {
-    if (inherits(obj, "msgl")) {
-      predicted.treatments <- predict(obj, x = x)$classes
-    } else {
-      predicted.treatments <- predict(obj, newx = newx, s = obj$lambda, type = "class")
-    }
     agree.ind <- apply(predicted.treatments, 2, function(x) which(x == actual.treatments & x == as.character(i)))
     for (l in 1:length(obj$lambda)) {
       ret[i, l] <- mean(outcome[agree.ind[[l]]]) - mean(outcome[-agree.ind[[l]]])
