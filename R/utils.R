@@ -25,16 +25,16 @@ aic <- function(obj, y, A, weights) {
   -2 * logLikGlmnet(y, obj, A, weights) + 2 * obj$df
 }
 
-dfMsgl <- function(obj) {
+df.msgl <- function(obj) {
   betas <- array(0, dim = length(obj$beta))
   for (i in 1:length(obj$beta)) {
-    betas[i] <- sum(colSums(obj$beta[[i]]) != 0)
+    betas[i] <- sum(colSums(as(obj$beta[[i]], "matrix")) != 0)
   }
   betas
 }
 
-aicMsgl <- function(obj) {
-  2 * (dfMsgl(obj) + obj$loss * length(obj$classes.true))
+aic.msgl <- function(obj) {
+  2 * (df.msgl(obj) + obj$loss * length(obj$classes.true))
 }
 
 bic <- function(obj, y, A, weights) {
