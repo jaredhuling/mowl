@@ -43,6 +43,15 @@ returnRule2 <- function(lst) {
 }
 
 
+# input rules must be a list of length equal to the number of treatments.
+# each element must be a list with: 
+#     'coefs' for coefficient values of treatment effect
+#     'var.idx' for index of variables corresponding to 'coefs'
+#     'int.coefs' for coefficient values for interaction effects on treatment
+#     'int.idx' is a matrix with number of columns equal to length of 'int.coefs'
+#               and for each column, the first value is the index corresponding to
+#               the variable index for first part of interaction and second value for 
+#               the second part of interaction
 genTreatmentRules2 <- function(lst) {
   stopifnot(class(lst) == "list")
   rules <- vector(mode = "list", length = length(lst))

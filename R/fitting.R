@@ -107,7 +107,10 @@ mowl.fit <- function(x, y, A, groups = NULL, nfolds, seed = 123, oracle = NULL, 
               d.optimal = d.optimal,
               d.class = d.class,
               d.value = d.value,
-              d.aic = d.aic)
+              d.aic = d.aic,
+              values = values,
+              misclass = misclass,
+              d.vals = d.vals)
   class(ret) <- "owlfit"
   ret
 }
