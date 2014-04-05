@@ -60,7 +60,7 @@ mowl.fit <- function(x, y, A, groups = NULL, nfolds, seed = 123, oracle = NULL, 
       fit.fold <- glmnet(x.train, A.train, family = "multinomial", weights = w.train, 
                           alpha = 1, lambda = model$lambda)
     } else {
-      fit.fold <- msgl(x.train, classes = A.train, sampleWeights = weights, groupWeights = gw, 
+      fit.fold <- msgl(x.train, classes = A.train, sampleWeights = w.train, groupWeights = gw, 
                        grouping = grouping, parameterWeights = pw, alpha = 0.5, lambda = msgl.lambda)
     }
     
