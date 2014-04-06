@@ -32,7 +32,7 @@ simulateOwlData <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y 
     y <- y + abs(min(y))
   } else if (outcome.type == "misspecified.binary"){
     exp.p.ratio <- rowSums(treatment.effects) + x[,3:(3 + length(true.beta) - 1)] %*% true.beta + 1
-    prob.y.1 <- log(exp.p.ratio + min(exp.p.ratio) + 1) / (1 + log(exp.p.ratio + min(exp.p.ratio) + 1))
+    prob.y.1 <- log(exp.p.ratio + sign(min(exp.p.ratio)) * min(exp.p.ratio) + 1) / (1 + log(exp.p.ratio + sign(min(exp.p.ratio)) * min(exp.p.ratio) + 1))
     y <- rbinom(n, 1, prob = prob.y.1)
   }
   
@@ -98,7 +98,7 @@ simulateOwlData2 <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y
     y <- y + abs(min(y))
   } else if (outcome.type == "misspecified.binary"){
     exp.p.ratio <- rowSums(treatment.effects) + x[,3:(3 + length(true.beta) - 1)] %*% true.beta + 1
-    prob.y.1 <- log(exp.p.ratio) / (1 + log(exp.p.ratio))
+    prob.y.1 <- log(exp.p.ratio + sign(min(exp.p.ratio)) * min(exp.p.ratio) + 1) / (1 + log(exp.p.ratio + sign(min(exp.p.ratio)) * min(exp.p.ratio) + 1))
     y <- rbinom(n, 1, prob = prob.y.1)
   }
   
