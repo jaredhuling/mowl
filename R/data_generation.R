@@ -44,7 +44,7 @@ simulateOwlData <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y 
 
 simulateOwlData2 <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y = 1,
                              outcome.type = c("numeric", "binary", "misspecified.binary"), 
-                             FALSE, num.factors = 0L, factor.levels = rep(3, num.factors)) {
+                             num.factors = 0L, factor.levels = rep(3, num.factors)) {
   
   outcome.type <- match.arg(outcome.type)
   stopifnot(all(num.factors > 1))
