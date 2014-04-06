@@ -43,8 +43,10 @@ simulateOwlData <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y 
 }
 
 simulateOwlData2 <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y = 1,
-                            binary.outcome = FALSE, num.factors = 0L, factor.levels = rep(3, num.factors)) {
+                             outcome.type = c("numeric", "binary", "misspecified.binary"), 
+                             FALSE, num.factors = 0L, factor.levels = rep(3, num.factors)) {
   
+  outcome.type <- match.arg(outcome.type)
   stopifnot(all(num.factors > 1))
   num.contin <- p - num.factors
   num.factors <- as.integer(num.factors)
@@ -87,13 +89,17 @@ simulateOwlData2 <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y
   
   treatment.effects <- genTreatmentEffects2(x, A, rules)
   
-  if (binary.outcome) {
+  if (outcome.type == "binary") {
     log.p.ratio <- rowSums(treatment.effects) + x[,3:(3 + length(true.beta) - 1)] %*% true.beta
     prob.y.1 <- 1 / (1 + exp(-log.p.ratio))
     y <- rbinom(n, 1, prob = prob.y.1)
-  } else {
+  } else if (outcome.type == "numeric") {
     y <- rnorm(n, sd = sd.y) + rowSums(treatment.effects) + x[,3:(3 + length(true.beta) - 1)] %*% true.beta
     y <- y + abs(min(y))
+  } else if (outcome.type == "misspecified.binary"){
+    exp.p.ratio <- rowSums(treatment.effects) + x[,3:(3 + length(true.beta) - 1)] %*% true.beta + 1
+    prob.y.1 <- log(exp.p.ratio) / (1 + log(exp.p.ratio))
+    y <- rbinom(n, 1, prob = prob.y.1)
   }
   
   oracle <- genOracleTreatments2(x, rules)
