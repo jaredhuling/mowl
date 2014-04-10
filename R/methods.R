@@ -15,7 +15,7 @@ predict.owlfit <- function(object, type.measure = c("class", "value", "aic", "de
 print.owlfit <- function(obj) {
   cat("\nCall: ", deparse(obj$call), "\n\n")
   
-  if (!is.null(max.pct.correct)) {
+  if (!is.null(obj$max.pct.correct)) {
     lams <- data.frame(array(0, dim = c(4, 2)))
     rownames(lams) <- c("Optimal", "Class", "Value", "AIC")
     colnames(lams) <- c("Lambda", "Pct Correct")
