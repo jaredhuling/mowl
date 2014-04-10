@@ -53,3 +53,48 @@ predTreatment <- function(obj, x) {
   }
   apply(coef.vals, 2:3, function(x) as.character(which.max(x)))
 }
+
+
+patientEffectData2d3 <- function(obj, x, patient.ind, lam.ind, 
+                                 patient.names = NULL, json = TRUE) {
+  require(jsonlite)
+  n.dat <- length(patient.ind)
+  ret.dat <- vector(length = n.dat, mode = "list")
+  
+  for (l in 1:n.dat) {
+    effects <- trts <- NULL
+    if (inherits(obj$model, "glmnet")) {
+      for (i in 1:length(obj$model$beta)) {
+        c.betas <- obj$model$beta[[i]][,lam.ind]
+        nz.ind <- which(c.betas != 0)
+        c.betas.nz <- c.betas[nz.ind]
+        col.ind <- match(names(c.betas.nz), colnames(x))
+        effects.tmp <- c(obj$model$a0[i, lam.ind], x[patient.ind[l], col.ind] * c.betas.nz)
+        effects.tmp <- effects.tmp[order(abs(effects.tmp), decreasing = TRUE)]
+        effects <- c(effects, effects.tmp)
+        trts <- c(trts, rep(names(obj$model$beta)[i], length(effects.tmp)))
+      }
+    } else {
+      full.beta <- as(obj$model$beta[[lam.ind]], "matrix")
+      trt.names <- dimnames(full.beta)[[1]]
+      for (i in 1:nrow(obj$model$beta[[1]])) {
+        c.betas <- full.beta[i,-1]
+        nz.ind <- which(c.betas != 0)
+        c.betas.nz <- c.betas[nz.ind]
+        col.ind <- match(names(c.betas.nz), colnames(x))
+        effects.tmp <- c(full.beta[i,1], x[patient.ind[l], col.ind] * c.betas.nz)
+        effects.tmp <- effects.tmp[order(abs(effects.tmp), decreasing = TRUE)]
+        effects <- c(effects, effects.tmp)
+        trts <- c(trts, rep(trt.names[i], length(effects.tmp)))
+      }
+    }
+    
+    ret.dat[[l]] <- data.frame(Treatment = trts, effects = effects)
+  }
+  names(ret.dat) <- if (is.null(patient.names)) {
+    paste("Patient", patient.ind, sep = "")
+  } else {
+    patient.names
+  }
+  if(json) {toJSON(ret.dat)} else {ret.dat}
+}
