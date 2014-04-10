@@ -19,3 +19,63 @@ plotTreatmentRules <- function(x, predictions, rules) {
   pl + stat_contour(aes( x1, x2, z = z), data = contour.data, size = 1) + scale_alpha(guide = 'none')
   
 }
+
+plotPatientEffects <- function(obj, x, patient.ind, lam.ind, return.all = FALSE) {
+  require(ggplot2)
+  require(grid)
+  require(gridExtra)
+  
+  effects <- trts <- NULL
+  if (inherits(obj$model, "glmnet")) {
+    for (i in 1:length(obj$model$beta)) {
+      c.betas <- obj$model$beta[[i]][,lam.ind]
+      nz.ind <- which(c.betas != 0)
+      c.betas.nz <- c.betas[nz.ind]
+      col.ind <- match(names(c.betas.nz), colnames(x))
+      effects.tmp <- c(obj$model$a0[i, lam.ind], x[patient.ind, col.ind] * c.betas.nz)
+      effects.tmp <- effects.tmp[order(abs(effects.tmp), decreasing = TRUE)]
+      effects <- c(effects, effects.tmp)
+      trts <- c(trts, rep(names(obj$model$beta)[i], length(effects.tmp)))
+    }
+  } else {
+    full.beta <- as(obj$model$beta[[lam.ind]], "matrix")
+    trt.names <- dimnames(full.beta)[[1]]
+    for (i in 1:nrow(obj$model$beta[[1]])) {
+      c.betas <- full.beta[i,-1]
+      nz.ind <- which(c.betas != 0)
+      c.betas.nz <- c.betas[nz.ind]
+      col.ind <- match(names(c.betas.nz), colnames(x))
+      effects.tmp <- c(full.beta[i,1], x[patient.ind, col.ind] * c.betas.nz)
+      effects.tmp <- effects.tmp[order(abs(effects.tmp), decreasing = TRUE)]
+      effects <- c(effects, effects.tmp)
+      trts <- c(trts, rep(trt.names[i], length(effects.tmp)))
+    }
+  }
+  
+  dat2plot <- data.frame(Treatment = trts, effects = effects)
+  dat2plotpos <- subset(dat2plot,effects >= 0)
+  dat2plotneg <- subset(dat2plot,effects < 0)
+  total.effects <- tapply(dat2plot$effects, as.factor(dat2plot$Treatment), FUN = sum)
+  pl <- ggplot() + 
+    geom_bar(data = dat2plotpos, aes(x=Treatment, y=effects, 
+                                     fill=factor(effects)),stat = "identity") +
+    geom_bar(data = dat2plotneg, aes(x=Treatment, y=effects, 
+                                     fill=factor(effects)),stat = "identity") +
+    theme_bw() + theme(legend.position="none",axis.title.x=element_blank(),
+                       plot.margin = grid::unit(c(1, 1, 0, 0.5), "cm"))
+  dat2plot2 <- data.frame(Treatment = names(total.effects), effects = 
+                            total.effects)
+  pl2 <- ggplot() + 
+    geom_bar(data = dat2plot2, aes(x=Treatment, y=effects),stat = "identity") +
+    theme_bw() + theme(legend.position="none", plot.margin = grid::unit(c(0, 0.5, 0.5, 0.15), "cm"))
+  #print(pl)
+  gp1<- ggplot_gtable(ggplot_build(pl))
+  gp2<- ggplot_gtable(ggplot_build(pl2))
+  print(grid.draw(rbind(ggplotGrob(pl), ggplotGrob(pl2), size="last")))
+  if (return.all) {
+    list(plot = pl, dat2plot = dat2plot)
+  } else {
+    list(plot = pl, dat2plot = dat2plot)
+  }
+}
+
