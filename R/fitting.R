@@ -103,7 +103,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
   ret <- list(model = model,
               call = thiscall,
               optimal.lambda = if(!is.null(oracle)) {model$lambda[optimal.ind]} else {NULL},
-              optimal.d.lambda = if(!is.null(oracle)) {model$lambda[optimal.ind.d]} else {NULL},
+              optimal.d.lambda = model$lambda[optimal.ind.d]},
               class.lambda = model$lambda[class.ind],
               value.lambda = model$lambda[value.ind],
               aic.lambda = model$lambda[aic.ind],
@@ -128,8 +128,9 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
 
 computeD <- function(obj, newx, outcome, actual.treatments) {
   if (is.factor(actual.treatments)) {
+    t.vals <- levels(actual.treatments)
     actual.treatments <- levels(actual.treatments)[actual.treatments]
-  }
+  } else {t.vals <- sort(unique(actual.treatments))}
   if (is.factor(outcome)) {
     outcome <- levels(outcome)[outcome]
   }
