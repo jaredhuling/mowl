@@ -83,7 +83,10 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, seed = 
     }
     if (verbose) cat("Fold = ", f, "\n")
   }
-  optimal.ind <- which.max(pct.correct)
+  
+  if (!is.null(oracle)) {
+    optimal.ind <- which.max(pct.correct)
+  }
   class.ind <- which.min(colMeans(misclass))
   value.ind <- which.max(colMeans(values))
   
