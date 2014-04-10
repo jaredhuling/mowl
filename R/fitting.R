@@ -127,6 +127,12 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
 
 
 computeD <- function(obj, newx, outcome, actual.treatments) {
+  if (is.factor(actual.treatments)) {
+    actual.treatments <- levels(actual.treatments)[actual.treatments]
+  }
+  if (is.factor(outcome)) {
+    outcome <- levels(outcome)[outcome]
+  }
   K <- if (inherits(obj, "msgl")){obj$beta[[1]]@Dim[1]} else {length(obj$beta)}
   ret <- array(0, dim = c(K, length(obj$lambda)))
   rownames(ret) <- paste("d", 1:K, sep="")
@@ -141,7 +147,8 @@ computeD <- function(obj, newx, outcome, actual.treatments) {
   for (i in 1:K) {
     agree.ind <- apply(predicted.treatments, 2, function(x) which(x == actual.treatments & x == as.character(i)))
     for (l in 1:length(obj$lambda)) {
-      ret[i, l] <- mean(outcome[agree.ind[[l]]]) - mean(outcome[-agree.ind[[l]]])
+      ret[i, l] <- if (length(agree.ind) == 0 || length(agree.ind[[l]]) == 0) {NA} else 
+                      {mean(outcome[agree.ind[[l]]]) - mean(outcome[-agree.ind[[l]]])}
     }
   }
   ret
