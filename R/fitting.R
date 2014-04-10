@@ -1,5 +1,6 @@
 
-mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, seed = 123, oracle = NULL, verbose = FALSE) {
+mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, 
+                     seed = 123, oracle = NULL, verbose = FALSE, ...) {
   
   thiscall <- match.call()
   weights <- y * 3
@@ -8,7 +9,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, seed = 
   K <- length(unique(A))
   
   if (is.null(groups)) {
-    model <- glmnet(x, A, family = "multinomial", weights = weights, alpha = 1)
+    model <- glmnet(x, A, family = "multinomial", weights = weights, alpha = 1, ...)
   } else {
     config <- msgl.algorithm.config(verbose = FALSE)
     GG <- unique(groups)
@@ -22,7 +23,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, seed = 
     msgl.lambda <- msgl.lambda.seq(x, A, sampleWeights = weights, groupWeights = gw, grouping = grouping,
                                    parameterWeights = pw, alpha = 0.5, d = 100, lambda.min = 1e-2)
     model <- msgl(x, classes = A, sampleWeights = weights, groupWeights = gw, grouping = grouping,
-                  parameterWeights = pw, alpha = 0.5, lambda = msgl.lambda, algorithm.config = config)
+                  parameterWeights = pw, alpha = 0.5, lambda = msgl.lambda, algorithm.config = config, ...)
   }
   
   if (!is.null(oracle)) {
