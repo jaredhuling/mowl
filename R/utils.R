@@ -54,7 +54,6 @@ predTreatment <- function(obj, x) {
   apply(coef.vals, 2:3, function(x) as.character(which.max(x)))
 }
 
-
 patientEffectData2d3 <- function(obj, x, patient.ind, lam.ind, 
                                  patient.names = NULL, json = TRUE) {
   require(jsonlite)
