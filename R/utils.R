@@ -63,7 +63,10 @@ patientEffectData2d3 <- function(obj, x, patient.ind, lam.ind,
   
   for (l in 1:n.dat) {
     effects <- trts <- NULL
+    
     if (inherits(obj$model, "glmnet")) {
+      ret <- vector(length = length(obj$model$beta), mode = "list")
+      names(ret) <- names(obj$model$beta)
       for (i in 1:length(obj$model$beta)) {
         c.betas <- obj$model$beta[[i]][,lam.ind]
         nz.ind <- which(c.betas != 0)
@@ -71,11 +74,11 @@ patientEffectData2d3 <- function(obj, x, patient.ind, lam.ind,
         col.ind <- match(names(c.betas.nz), colnames(x))
         effects.tmp <- c(obj$model$a0[i, lam.ind], x[patient.ind[l], col.ind] * c.betas.nz)
         effects.tmp <- effects.tmp[order(abs(effects.tmp), decreasing = TRUE)]
-        effects <- c(effects, effects.tmp)
-        trts <- c(trts, rep(names(obj$model$beta)[i], length(effects.tmp)))
+        ret[[i]] <- effects.tmp
       }
     } else {
       full.beta <- as(obj$model$beta[[lam.ind]], "matrix")
+      ret <- vector(length = nrow(obj$model$beta[[1]]), mode = "list")
       trt.names <- dimnames(full.beta)[[1]]
       for (i in 1:nrow(obj$model$beta[[1]])) {
         c.betas <- full.beta[i,-1]
@@ -84,12 +87,11 @@ patientEffectData2d3 <- function(obj, x, patient.ind, lam.ind,
         col.ind <- match(names(c.betas.nz), colnames(x))
         effects.tmp <- c(full.beta[i,1], x[patient.ind[l], col.ind] * c.betas.nz)
         effects.tmp <- effects.tmp[order(abs(effects.tmp), decreasing = TRUE)]
-        effects <- c(effects, effects.tmp)
-        trts <- c(trts, rep(trt.names[i], length(effects.tmp)))
+        ret[[i]] <- effects.tmp
       }
     }
     
-    ret.dat[[l]] <- data.frame(Treatment = trts, effects = effects)
+    ret.dat[[l]] <- ret
   }
   names(ret.dat) <- if (is.null(patient.names)) {
     paste("Patient", patient.ind, sep = "")
