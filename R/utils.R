@@ -58,7 +58,7 @@ predTreatment <- function(obj, x) {
 
 patientEffectData2d3 <- function(obj, x, patient.ind, lam.ind, 
                                  patient.names = NULL, json = TRUE) {
-  require(jsonlite)
+  require(rjson)
   n.dat <- length(patient.ind)
   ret.dat <- vector(length = n.dat, mode = "list")
   
