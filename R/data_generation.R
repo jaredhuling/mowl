@@ -10,9 +10,10 @@ simulateOwlData <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y 
   x <- matrix(rnorm(n * num.contin, sd = sd.x), n, num.contin)
   colnames(x) <- paste("X", 1:p, sep = "")
   #x <- matrix(rbinom(n * p, 1, 0.05), n, p)
-  x.factors <- sapply(factor.levels, function(x) sample.int(x, n, replace = TRUE))
-  x <- cbind(x, x.factors)
-    
+  if (num.factors > 0){
+    x.factors <- sapply(factor.levels, function(x) sample.int(x, n, replace = TRUE))
+    x <- cbind(x, x.factors)
+  }
   if (interaction) {
     x <- model.matrix(~ -1 + . + .*., data = x)
   } else {
@@ -47,7 +48,7 @@ simulateOwlData2 <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y
                              num.factors = 0L, factor.levels = rep(3, num.factors)) {
   
   outcome.type <- match.arg(outcome.type)
-  stopifnot(all(num.factors > 1))
+  if (num.factors > 0) stopifnot(all(factor.levels > 1))
   num.contin <- p - num.factors
   num.factors <- as.integer(num.factors)
   n <- as.integer(n)
@@ -55,15 +56,19 @@ simulateOwlData2 <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y
   x <- matrix(rnorm(n * num.contin, sd = sd.x), n, num.contin)
   colnames(x) <- paste("C.X", 1:num.contin, sep = "")
   
-  num.binary <- sum(factor.levels == 2)
-  
-  #x <- matrix(rbinom(n * p, 1, 0.05), n, p)
-  x.factors <- sapply(factor.levels, function(x) as.factor(sample.int(x, n, replace = TRUE)))
-  colnames(x.factors) <- paste("F.X", 1:num.factors, sep = "")
-  colnames(x.factors)[which(factor.levels == 2)] <- paste(paste("Bin.X", 1:num.binary, sep = ""), ".", sep = "")
-  colnames(x.factors)[which(factor.levels != 2)] <- paste(paste("F.X", 1:(num.factors - num.binary), sep = ""), ".", sep = "")
-  
-  x <- data.frame(x, x.factors)
+  if (num.factors > 0){
+    num.binary <- sum(factor.levels == 2)
+    
+    #x <- matrix(rbinom(n * p, 1, 0.05), n, p)
+    x.factors <- sapply(factor.levels, function(x) as.factor(sample.int(x, n, replace = TRUE)))
+    colnames(x.factors) <- paste("F.X", 1:num.factors, sep = "")
+    colnames(x.factors)[which(factor.levels == 2)] <- paste(paste("Bin.X", 1:num.binary, sep = ""), ".", sep = "")
+    colnames(x.factors)[which(factor.levels != 2)] <- paste(paste("F.X", 1:(num.factors - num.binary), sep = ""), ".", sep = "")
+    
+    x <- data.frame(x, x.factors)
+  } else {
+    x <- data.frame(x)
+  }
   
   
   if (interaction) {
