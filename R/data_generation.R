@@ -12,7 +12,9 @@ simulateOwlData <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y 
   #x <- matrix(rbinom(n * p, 1, 0.05), n, p)
   if (num.factors > 0){
     x.factors <- sapply(factor.levels, function(x) sample.int(x, n, replace = TRUE))
-    x <- cbind(x, x.factors)
+    x <- data.frame(x, x.factors)
+  } else {
+    x <- data.frame(x)
   }
   if (interaction) {
     x <- model.matrix(~ -1 + . + .*., data = x)
