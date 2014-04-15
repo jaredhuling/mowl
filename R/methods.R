@@ -88,7 +88,10 @@ plot.owlfit <- function(x) {
   value.text <- if(class.lam == value.lam) {""} else ("\n Value Func. Selection")
   
   vline.dat <- data.frame(value.lam = value.lam, class.lam = class.lam,
-                          aic.lam = aic.lam, value.text = value.text)
+                          aic.lam = aic.lam, value.text = value.text,
+                          class.text.y.p2 = class.text.y.p2,
+                          value.text.y.p2 = value.text.y.p2,
+                          aic.text.y.p2 = aic.text.y.p2)
   
   p1 <- ggplot(aes(x = -lambda, y = dvals, color = treatment), data = dvaldat) + geom_line(size=1.2) + 
     theme_bw() + theme(legend.position = "bottom") + geom_vline(xintercept = -class.lam) +
