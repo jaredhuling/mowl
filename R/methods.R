@@ -97,6 +97,5 @@ plot.owlfit <- function(x) {
     geom_text(aes(x = -aic.lam, label="\n AIC Selection", y = aic.text.y.p2), 
               colour="blue", angle=90, text=element_text(size=11))
   print(grid.draw(rbind(ggplotGrob(p1), ggplotGrob(p2), size = "last")))
-  list(p1 = p1, p2 = p2)
 }
 
