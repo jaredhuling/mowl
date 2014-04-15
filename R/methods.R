@@ -48,7 +48,7 @@ print.owlfit <- function(obj) {
 }
 
 
-plot.owlfit <- function(obj) {
+plot.owlfit <- function(x) {
   #K <- nrow(obj$d.vals)
   #nonan <- obj$d.vals; nonan[is.nan(nonan)] <- mean(nonan[!is.nan(nonan)])
   #ylims <- c(min(na.omit(obj$d.vals))-0.25 * sd(nonan[!is.nan(nonan)]), max(na.omit(obj$d.vals)+0.25 * sd(nonan[!is.nan(nonan)])))
