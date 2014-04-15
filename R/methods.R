@@ -77,7 +77,7 @@ plot.owlfit <- function(x) {
   
   dfdat <- data.frame(df = rep(dfs, nrow(x$d.vals)),
                       lambda = rep(x$model$lambda, nrow(x$d.vals)))
-  
+  print(x$class.lambda)
   class.lam <- x$class.lambda
   value.lam <- x$value.lambda
   aic.lam <- x$aic.lambda
