@@ -1,6 +1,7 @@
 
 mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, 
-                     seed = 123, oracle = NULL, verbose = FALSE, alpha = 0.5, ...) {
+                     seed = 123, oracle = NULL, verbose = FALSE, 
+                     alpha = if(is.null(groups)) {1} else {0.5}, ...) {
   
   thiscall <- match.call()
   weights <- y * 3
