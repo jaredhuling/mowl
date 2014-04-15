@@ -78,9 +78,10 @@ plot.owlfit <- function(x) {
   dfdat <- data.frame(df = rep(dfs, nrow(x$d.vals)),
                       lambda = rep(x$model$lambda, nrow(x$d.vals)))
   print(x$class.lambda)
-  class.lam <- x$class.lambda
-  value.lam <- x$value.lambda
-  aic.lam <- x$aic.lambda
+  class.lam <- -1 * x$class.lambda
+  value.lam <- -1 * x$value.lambda
+  print(value.lam)
+  aic.lam <- -1 * x$aic.lambda
   class.text.y.p2 <- (x$model$df[x$class.lambda.idx] + max(x$model$df)) / 2.5
   value.text.y.p2 <- (x$model$df[x$value.lambda.idx] + max(x$model$df)) / 2.5
   aic.text.y.p2 <- (x$model$df[x$aic.lambda.idx] + max(x$model$df)) / 2.5
@@ -93,14 +94,14 @@ plot.owlfit <- function(x) {
 
   
   p2 <- ggplot(aes(x = -lambda, y = df), data = dfdat) + geom_line(size=1.2) + theme_bw() +
-    geom_vline(xintercept = -class.lam) +
-    geom_text(aes(x = -class.lam, label="\n Misclassification Selection", y = class.text.y.p2), 
+    geom_vline(xintercept = class.lam) +
+    geom_text(aes(x = class.lam, label="\n Misclassification Selection", y = class.text.y.p2), 
               colour="blue", angle=90, text=element_text(size=11)) +
-    geom_vline(xintercept = -aic.lam) +
-    geom_text(aes(x = -aic.lam, label="\n AIC Selection", y = aic.text.y.p2), 
+    geom_vline(xintercept = aic.lam) +
+    geom_text(aes(x = aic.lam, label="\n AIC Selection", y = aic.text.y.p2), 
               colour="blue", angle=90, text=element_text(size=11)) + 
-    geom_vline(xintercept = -value.lam) +
-    geom_text(aes(x = -value.lam, label=value.text, y = value.text.y.p2), 
+    geom_vline(xintercept = value.lam) +
+    geom_text(aes(x = value.lam, label=value.text, y = value.text.y.p2), 
               colour="blue", angle=90, text=element_text(size=11))
   print(grid.draw(rbind(ggplotGrob(p1), ggplotGrob(p2), size = "last")))
 }
