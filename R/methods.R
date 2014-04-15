@@ -61,33 +61,33 @@ plot.owlfit <- function(x) {
   require(grid)
   require(gridExtra)
   
-  n.trt <- nrow(obj$d.vals)
-  n.lam <- ncol(obj$d.vals)
+  n.trt <- nrow(x$d.vals)
+  n.lam <- ncol(x$d.vals)
   d.vals <- numeric(length = (n.trt) * n.lam)
-  for (i in 1:(nrow(obj$d.vals))) {
-    d.vals[((i-1) * n.lam + 1):(i * n.lam)] <- obj$d.vals[i,]
+  for (i in 1:(nrow(x$d.vals))) {
+    d.vals[((i-1) * n.lam + 1):(i * n.lam)] <- x$d.vals[i,]
   }
   
-  dfs <- if(inherits(obj$model, "msgl")) {df.msgl(obj)} else {obj$model$df}
+  dfs <- if(inherits(x$model, "msgl")) {df.msgl(x)} else {x$model$df}
   
   dvaldat <- data.frame(dvals = d.vals, 
-                        treatment = rep(as.character(1:4), each = ncol(obj$d.vals)),
-                        df = rep(dfs, nrow(obj$d.vals)),
-                        lambda = rep(obj$model$lambda, nrow(obj$d.vals)))
+                        treatment = rep(as.character(1:4), each = ncol(x$d.vals)),
+                        df = rep(dfs, nrow(x$d.vals)),
+                        lambda = rep(x$model$lambda, nrow(x$d.vals)))
   
-  dfdat <- data.frame(df = rep(dfs, nrow(obj$d.vals)),
-                      lambda = rep(obj$model$lambda, nrow(obj$d.vals)))
+  dfdat <- data.frame(df = rep(dfs, nrow(x$d.vals)),
+                      lambda = rep(x$model$lambda, nrow(x$d.vals)))
   
   p1 <- ggplot(aes(x = -lambda, y = dvals, color = treatment), data = dvaldat) + geom_line(size=1.2) + 
-    theme_bw() + theme(legend.position = "bottom") + geom_vline(xintercept = -obj$class.lambda) +
-    geom_vline(xintercept = -obj$aic.lambda)
+    theme_bw() + theme(legend.position = "bottom") + geom_vline(xintercept = -x$class.lambda) +
+    geom_vline(xintercept = -x$aic.lambda)
   
   p2 <- ggplot(aes(x = -lambda, y = df), data = dfdat) + geom_line(size=1.2) + theme_bw() +
-    geom_vline(xintercept = -obj$class.lambda) +
-    geom_text(aes(x = -obj$class.lambda, label="\n Misclassification Selection", y = (obj$model$df[obj$class.lambda.idx] + max(obj$model$df)) / 2.5), 
+    geom_vline(xintercept = -x$class.lambda) +
+    geom_text(aes(x = -x$class.lambda, label="\n Misclassification Selection", y = (x$model$df[x$class.lambda.idx] + max(x$model$df)) / 2.5), 
               colour="blue", angle=90, text=element_text(size=11)) +
-    geom_vline(xintercept = -obj$aic.lambda) +
-    geom_text(aes(x = -obj$aic.lambda, label="\n AIC Selection", y = (obj$model$df[obj$aic.lambda.idx] + max(obj$model$df)) / 2.5), 
+    geom_vline(xintercept = -x$aic.lambda) +
+    geom_text(aes(x = -x$aic.lambda, label="\n AIC Selection", y = (x$model$df[x$aic.lambda.idx] + max(x$model$df)) / 2.5), 
               colour="blue", angle=90, text=element_text(size=11))
   print(grid.draw(rbind(ggplotGrob(p1), ggplotGrob(p2), size = "last")))
   list(p1 = p1, p2 = p2)
