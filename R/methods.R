@@ -32,13 +32,13 @@ print.owlfit <- function(obj) {
   
   cat("\n")
   
-  dvals <- data.frame(array(0, dim = c(4, 4)))
+  dvals <- data.frame(array(0, dim = c(4, (length(obj$d.optimal)+1))))
   rownames(dvals) <- c("Optimal", "Class", "Value", "AIC")
-  colnames(dvals) <- c("Lambda", "D1", "D2", "D3")
-  dvals[1, 2:4] <- obj$d.optimal
-  dvals[2, 2:4] <- obj$d.class
-  dvals[3, 2:4] <- obj$d.value
-  dvals[4, 2:4] <- obj$d.aic
+  colnames(dvals) <- c("Lambda", paste("D", 1:length(obj$d.optimal), sep = ""))
+  dvals[1, 2:(length(obj$d.optimal)+1)] <- obj$d.optimal
+  dvals[2, 2:(length(obj$d.optimal)+1)] <- obj$d.class
+  dvals[3, 2:(length(obj$d.optimal)+1)] <- obj$d.value
+  dvals[4, 2:(length(obj$d.optimal)+1)] <- obj$d.aic
   dvals[1, 1] <- obj$optimal.d.lambda
   dvals[2,1] <- obj$class.lambda
   dvals[3,1] <- obj$value.lambda
