@@ -10,7 +10,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
   K <- length(unique(A))
   
   if (is.null(groups)) {
-    model <- glmnet(x, A, family = "multinomial", weights = weights, alpha = 1, ...)
+    model <- glmnet(x, A, family = "multinomial", weights = weights, alpha = alpha, ...)
   } else {
     config <- msgl.algorithm.config(verbose = FALSE)
     GG <- unique(groups)
@@ -61,7 +61,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
     
     if (is.null(groups)) {
       fit.fold <- glmnet(x.train, A.train, family = "multinomial", weights = w.train, 
-                          alpha = 1, lambda = model$lambda)
+                          alpha = alpha, lambda = model$lambda)
     } else {
       fit.fold <- msgl(x.train, classes = A.train, sampleWeights = w.train, groupWeights = gw, 
                        grouping = grouping, parameterWeights = pw, alpha = alpha, lambda = msgl.lambda, algorithm.config = config)
