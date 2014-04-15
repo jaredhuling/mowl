@@ -79,9 +79,12 @@ plot.owlfit <- function(x) {
                       lambda = rep(x$model$lambda, nrow(x$d.vals)))
   
   class.lam <- x$class.lambda
+  value.lam <- x$value.lambda
   aic.lam <- x$aic.lambda
   class.text.y.p2 <- (x$model$df[x$class.lambda.idx] + max(x$model$df)) / 2.5
+  value.text.y.p2 <- (x$model$df[x$value.lambda.idx] + max(x$model$df)) / 2.5
   aic.text.y.p2 <- (x$model$df[x$aic.lambda.idx] + max(x$model$df)) / 2.5
+  value.text <- if(class.lam == value.lam) {""} else ("\n Value Func. Selection")
   
   p1 <- ggplot(aes(x = -lambda, y = dvals, color = treatment), data = dvaldat) + geom_line(size=1.2) + 
     theme_bw() + theme(legend.position = "bottom") + geom_vline(xintercept = -class.lam) +
@@ -95,6 +98,9 @@ plot.owlfit <- function(x) {
               colour="blue", angle=90, text=element_text(size=11)) +
     geom_vline(xintercept = -aic.lam) +
     geom_text(aes(x = -aic.lam, label="\n AIC Selection", y = aic.text.y.p2), 
+              colour="blue", angle=90, text=element_text(size=11)) + 
+    geom_vline(xintercept = -value.lam) +
+    geom_text(aes(x = -value.lam, label=value.text, y = value.text.y.p2), 
               colour="blue", angle=90, text=element_text(size=11))
   print(grid.draw(rbind(ggplotGrob(p1), ggplotGrob(p2), size = "last")))
 }
