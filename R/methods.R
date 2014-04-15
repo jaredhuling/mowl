@@ -94,8 +94,8 @@ plot.owlfit <- function(x) {
                           aic.text.y.p2 = aic.text.y.p2)
   
   p1 <- ggplot(aes(x = -lambda, y = dvals, color = treatment), data = dvaldat) + geom_line(size=1.2) + 
-    theme_bw() + theme(legend.position = "bottom") + geom_vline(xintercept = -class.lam) +
-    geom_vline(xintercept = aic.lam, data = vline.dat)
+    theme_bw() + theme(legend.position = "bottom") + geom_vline(aes(xintercept = class.lam), data = vline.dat) +
+    geom_vline(aes(xintercept = aic.lam), data = vline.dat)
   
 
   
