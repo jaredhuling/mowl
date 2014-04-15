@@ -61,11 +61,11 @@ plot.owlfit <- function(obj) {
   require(grid)
   require(gridExtra)
   
-  n.trt <- nrow(mod21$d.vals)
-  n.lam <- ncol(mod21$d.vals)
+  n.trt <- nrow(obj$d.vals)
+  n.lam <- ncol(obj$d.vals)
   d.vals <- numeric(length = (n.trt) * n.lam)
-  for (i in 1:(nrow(mod21$d.vals))) {
-    d.vals[((i-1) * n.lam + 1):(i * n.lam)] <- mod21$d.vals[i,]
+  for (i in 1:(nrow(obj$d.vals))) {
+    d.vals[((i-1) * n.lam + 1):(i * n.lam)] <- obj$d.vals[i,]
   }
   
   dfs <- if(inherits(obj$model, "msgl")) {df.msgl(obj)} else {obj$model$df}
