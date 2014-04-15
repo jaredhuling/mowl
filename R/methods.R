@@ -97,14 +97,15 @@ plot.owlfit <- function(x) {
 
   
   p2 <- ggplot(aes(x = -lambda, y = df), data = dfdat) + geom_line(size=1.2) + theme_bw() +
-    geom_vline(xintercept = class.lam, data = vline.dat) +
-    geom_text(aes(x = class.lam, label="\n Misclassification Selection", y = class.text.y.p2), 
+    geom_vline(aes(xintercept = class.lam), data = vline.dat) +
+    geom_text(aes(x = class.lam, label="\n Misclassification Selection", y = class.text.y.p2),
+              data = vline.dat,
               colour="blue", angle=90, text=element_text(size=11)) +
-    geom_vline(xintercept = aic.lam, data = vline.dat) +
-    geom_text(aes(x = aic.lam, label="\n AIC Selection", y = aic.text.y.p2), 
+    geom_vline(aes(xintercept = aic.lam), data = vline.dat) +
+    geom_text(aes(x = aic.lam, label="\n AIC Selection", y = aic.text.y.p2), data = vline.dat,
               colour="blue", angle=90, text=element_text(size=11)) + 
-    geom_vline(xintercept = value.lam, data = vline.dat) +
-    geom_text(aes(x = value.lam, label=value.text, y = value.text.y.p2), 
+    geom_vline(aes(xintercept = value.lam), data = vline.dat) +
+    geom_text(aes(x = value.lam, label=value.text, y = value.text.y.p2), data = vline.dat,
               colour="blue", angle=90, text=element_text(size=11))
   print(grid.draw(rbind(ggplotGrob(p1), ggplotGrob(p2), size = "last")))
 }
