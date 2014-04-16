@@ -54,7 +54,26 @@ predTreatment <- function(obj, x) {
   apply(coef.vals, 2:3, function(x) as.character(which.max(x)))
 }
 
-
+modelMatrixNeg <- function(data, interaction = FALSE) {
+  x <- model.matrix(~ ., data = data)[,-1]
+  p <- ncol(x)
+  x[x == 0] <- -1
+  x.ret <- array(0, dim = c(nrow(x), if(interaction)
+  {choose(p, 2) + p} else {p}))
+  colnames(x.ret) <- 1:ncol(x.ret)
+  colx <- colnames(x)
+  colnames(x.ret)[1:p] <- colx
+  x.ret[,1:p] <- x
+  k <- 0
+  for (i in 1:(p - 1)) {
+    for (j in (i + 1):p) {
+      k <- k + 1
+      x.ret[,p + k] <- x[,i] * x[,j]
+      colnames(x.ret)[p + k] <- paste(colx[i], colx[j], sep = ":")
+    }
+  }
+  x.ret
+}
 
 patientEffectData2d3 <- function(obj, x, patient.ind, lam.ind, 
                                  patient.names = NULL, json = TRUE) {
