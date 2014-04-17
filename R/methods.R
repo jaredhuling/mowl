@@ -47,7 +47,7 @@ print.owlfit <- function(obj, xtable = FALSE,  ...) {
   if (xtable) {
     require(xtable)
     xt.res <- xtable(dvals, digits = 3)
-    align(xt.res) <- paste("r", rep("l", (length(obj$d.optimal) + 1)), sep = "|")
+    align(xt.res) <- paste("r", paste(rep("l", (length(obj$d.optimal) + 1)), collapse = ""), sep = "|")
     print(xt.res, floating = FALSE)
   }
   
