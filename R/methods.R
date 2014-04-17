@@ -12,7 +12,7 @@ predict.owlfit <- function(object, type.measure = c("class", "value", "aic", "de
   }
 }
 
-print.owlfit <- function(obj) {
+print.owlfit <- function(obj, xtable = FALSE,  ...) {
   cat("\nCall: ", deparse(obj$call), "\n\n")
   
   if (!is.null(obj$max.pct.correct)) {
@@ -44,6 +44,12 @@ print.owlfit <- function(obj) {
   dvals[3,1] <- obj$value.lambda
   dvals[4,1] <- obj$aic.lambda
   print(dvals)
+  if (xtable) {
+    require(xtable)
+    xt.res <- xtable(dvals, digits = 3)
+    align(xt.res) <- paste("r", rep("l", (length(obj$d.optimal) + 1)), sep = "|")
+    print(xt.res, floating = FALSE)
+  }
   
 }
 
