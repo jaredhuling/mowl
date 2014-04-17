@@ -74,8 +74,8 @@ simulateOwlData2 <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y
   
   
   if (interaction) {
-    #x <- model.matrix(~ . + .*., data = x)[,-1]
-    x <- modelMatrixNeg(x, interaction = TRUE)
+    x <- model.matrix(~ . + .*., data = x)[,-1]
+    #x <- modelMatrixNeg(x, interaction = TRUE)
     #non.int <- colnames(x)[-grep(":", colnames(x))]
     all.uniques <- gsub("[\\.]([0-9]+)", "", colnames(x))
     contins <- grep("^(C|Bin)\\.X[0-9]+[^F]*$[^:]*$", all.uniques, perl = TRUE)
@@ -85,8 +85,8 @@ simulateOwlData2 <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y
     uni <- unique(all.uniques[-contins])
     grouping[-contins] <- match(all.uniques[-contins], uni)
   } else {
-    #x <- model.matrix(~ ., data = x)[,-1]
-    x <- modelMatrixNeg(x, interaction = FALSE)
+    x <- model.matrix(~ ., data = x)[,-1]
+    #x <- modelMatrixNeg(x, interaction = FALSE)
     all.uniques <- gsub("[\\.]([0-9]+)", "", colnames(x))
     contins <- grep("^(C|Bin)\\.X[0-9]+", all.uniques, perl = TRUE)
     grouping <- rep(NA, ncol(x))
