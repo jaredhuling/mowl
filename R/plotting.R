@@ -79,3 +79,40 @@ plotPatientEffects <- function(obj, x, patient.ind, lam.ind, return.all = FALSE)
   }
 }
 
+
+plotTreatmentEffects <- function(obj, lam.ind = NULL) {
+  if (is.null(lam.ind)){lam.ind <- obj$value.lambda.idx}
+  n.trts <- nrow(obj$d.vals)
+  dat.list <- vector(mode = "list", length = n.trts)
+  plot.obj <- ggplot(mapping = aes(x=variable, y=value)) + theme_bw() +
+    theme(axis.text.x = element_text(angle=90, hjust=1, size = 14))
+  
+  if (inherits(obj$model, "msgl")) {
+    full.beta <- as(obj$model$beta[[lam.ind]], "matrix")[,-1]
+  }
+  
+  for (i in 1:n.trts) {
+    if (inherits(obj$model, "msgl")) {
+      c.betas <- full.beta[i, ]
+    } else {
+      c.betas <- obj$model$beta[[i]][,lam.ind]
+    }
+    c.betas.nz <- c.betas[c.betas !=0]
+    t1 <- c.betas.nz[order(abs(c.betas.nz), decreasing = TRUE)]
+    
+    ## Plot Treatment 1 effects
+    dat2plott1 <- data.frame(variable = names(t1), value = t1, treatment = rep(as.character(i), length(t1)))
+    
+    dat2plott1 <- transform(dat2plott1, variable=reorder(variable, -abs(value)) ) 
+    
+    dat2plott1$variable <- factor(dat2plott1$variable, levels=unique(as.character(dat2plott1$variable)), ordered = TRUE )
+    dat.list[[i]] <- dat2plott1
+    plot.obj <- plot.obj + geom_point(data=dat2plott1, size = 4)
+  }
+  plot.obj <- plot.obj + facet_wrap(~ treatment, scale = "free_x", ncol = 2) 
+  
+  print(plot.obj)
+}
+
+
+
