@@ -55,6 +55,19 @@ predTreatment <- function(obj, x) {
 }
 
 modelMatrixNeg <- function(data, interaction = FALSE) {
+  
+  varnames <- colnames(dat)
+  for (i in 1:ncol(dat)){
+    if (is.factor(dat[[i]])) {
+      if (length(levels(dat[[i]])) < 3) {
+        varnames[i] <- NA
+      }
+    } else {
+      varnames[i] <- NA
+    }
+  }
+  factornames <- varnames[!is.na(varnames)]
+  
   x <- model.matrix(~ ., data = data)[,-1]
   p <- ncol(x)
   x[x == 0] <- -1
@@ -72,6 +85,12 @@ modelMatrixNeg <- function(data, interaction = FALSE) {
       colnames(x.ret)[p + k] <- paste(colx[i], colx[j], sep = ":")
     }
   }
+  groups <- rep(NA, ncol(x.ret))
+  for (i in 1:length(factornames)) {
+    factor.locs <- colnames(x)[grep(factornames[i], colnames(x))]
+    groups[factor.locs] <- i
+  }
+  attr(x.ret, "groups") <- groups
   x.ret
 }
 
