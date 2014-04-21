@@ -56,10 +56,10 @@ predTreatment <- function(obj, x) {
 
 modelMatrixNeg <- function(data, interaction = FALSE) {
   
-  varnames <- colnames(dat)
-  for (i in 1:ncol(dat)){
-    if (is.factor(dat[[i]])) {
-      if (length(levels(dat[[i]])) < 3) {
+  varnames <- colnames(data)
+  for (i in 1:ncol(data)){
+    if (is.factor(data[[i]])) {
+      if (length(levels(data[[i]])) < 3) {
         varnames[i] <- NA
       }
     } else {
