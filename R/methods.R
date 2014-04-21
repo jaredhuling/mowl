@@ -1,3 +1,8 @@
+
+groups <- function(x) {
+  attr(x, "groups")
+}
+
 predict.owlfit <- function(object, type.measure = c("class", "value", "aic", "deviance", "optimal"), ...) {
   type.measure <- match.arg(type.measure)
   lam <- switch(type.measure,
