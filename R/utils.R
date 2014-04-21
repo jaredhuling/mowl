@@ -87,9 +87,10 @@ modelMatrixNeg <- function(data, interaction = FALSE) {
   }
   groups <- rep(NA, ncol(x.ret))
   for (i in 1:length(factornames)) {
-    factor.locs <- colnames(x.ret)[grep(factornames[i], colnames(x.ret))]
+    factor.locs <- grep(factornames[i], colnames(x.ret))
     groups[factor.locs] <- i
   }
+  names(groups) <- colnames(x.ret)
   attr(x.ret, "groups") <- groups
   x.ret
 }
