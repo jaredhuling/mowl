@@ -79,7 +79,7 @@ plot.owlfit <- function(x) {
     d.vals[((i-1) * n.lam + 1):(i * n.lam)] <- x$d.vals[i,]
   }
   
-  dfs <- if(inherits(x$model, "msgl")) {df.msgl(x)} else {x$model$df}
+  dfs <- if(inherits(x$model, "msgl")) {df.msgl(x$model)} else {x$model$df}
   
   dvaldat <- data.frame(dvals = d.vals, 
                         treatment = rep(as.character(1:4), each = ncol(x$d.vals)),
