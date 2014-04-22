@@ -13,17 +13,17 @@ thresholdModel <- function(obj, threshold = 0) {
     stop("need either owlfit, msgl, or glmnet object")
   }
   
-  nbeta <- if (owlfit) {
-      length(owl.obj$model$beta)
-      for (i in 1:nbeta) {
-        owl.obj$model$beta[[i]][abs(owl.obj$model$beta[[i]]) < threshold] <- 0
-      }
-    } else {
-      length(owl.obj$beta)
-      for (i in 1:nbeta) {
-        owl.obj$beta[[i]][abs(owl.obj$beta[[i]]) < threshold] <- 0
-      }
+  if (owlfit) {
+    nbeta <- length(owl.obj$model$beta)
+    for (i in 1:nbeta) {
+      owl.obj$model$beta[[i]][abs(owl.obj$model$beta[[i]]) < threshold] <- 0
     }
+  } else {
+    nbeta <- length(owl.obj$beta)
+    for (i in 1:nbeta) {
+      owl.obj$beta[[i]][abs(owl.obj$beta[[i]]) < threshold] <- 0
+    }
+  }
 
   owl.obj
 }
