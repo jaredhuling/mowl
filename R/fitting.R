@@ -28,7 +28,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
   }
   
   if (threshold > 0) {
-    model <- thresholdModel(model)
+    model <- thresholdModel(model, threshold)
   }
   
   if (!is.null(oracle)) {
@@ -72,7 +72,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
     }
     
     if (threshold > 0) {
-      fit.fold <- thresholdModel(fit.fold)
+      fit.fold <- thresholdModel(fit.fold, threshold)
     }
     
     if (!is.null(groups)) {
