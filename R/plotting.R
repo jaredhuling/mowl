@@ -20,7 +20,7 @@ plotTreatmentRules <- function(x, predictions, rules) {
   
 }
 
-plotPatientEffects <- function(obj, x, patient.ind, lam.ind, return.all = FALSE) {
+plotPatientEffects <- function(obj, x, patient.ind, lam.ind, threshold = 0, return.all = FALSE) {
   require(ggplot2)
   require(grid)
   require(gridExtra)
@@ -29,6 +29,7 @@ plotPatientEffects <- function(obj, x, patient.ind, lam.ind, return.all = FALSE)
   if (inherits(obj$model, "glmnet")) {
     for (i in 1:length(obj$model$beta)) {
       c.betas <- obj$model$beta[[i]][,lam.ind]
+      c.betas[abs(c.betas) < threshold] <- 0
       nz.ind <- which(c.betas != 0)
       c.betas.nz <- c.betas[nz.ind]
       col.ind <- match(names(c.betas.nz), colnames(x))
@@ -39,6 +40,7 @@ plotPatientEffects <- function(obj, x, patient.ind, lam.ind, return.all = FALSE)
     }
   } else {
     full.beta <- as(obj$model$beta[[lam.ind]], "matrix")
+    c.betas[abs(c.betas) < threshold] <- 0
     trt.names <- dimnames(full.beta)[[1]]
     for (i in 1:nrow(obj$model$beta[[1]])) {
       c.betas <- full.beta[i,-1]
@@ -80,7 +82,7 @@ plotPatientEffects <- function(obj, x, patient.ind, lam.ind, return.all = FALSE)
 }
 
 
-plotTreatmentEffects <- function(obj, lam.ind = NULL) {
+plotTreatmentEffects <- function(obj, lam.ind = NULL, threshold = 0) {
   if (is.null(lam.ind)){lam.ind <- obj$value.lambda.idx}
   n.trts <- nrow(obj$d.vals)
   dat.list <- vector(mode = "list", length = n.trts)
@@ -89,6 +91,7 @@ plotTreatmentEffects <- function(obj, lam.ind = NULL) {
   
   if (inherits(obj$model, "msgl")) {
     full.beta <- as(obj$model$beta[[lam.ind]], "matrix")[,-1]
+    full.beta[abs(full.beta) < threshold] <- 0
   }
   
   for (i in 1:n.trts) {
@@ -97,6 +100,7 @@ plotTreatmentEffects <- function(obj, lam.ind = NULL) {
     } else {
       c.betas <- obj$model$beta[[i]][,lam.ind]
     }
+    c.betas[abs(c.betas) < threshold] <- 0
     c.betas.nz <- c.betas[c.betas !=0]
     t1 <- c.betas.nz[order(abs(c.betas.nz), decreasing = TRUE)]
     

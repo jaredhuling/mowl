@@ -3,6 +3,16 @@ groups <- function(x) {
   attr(x, "groups")
 }
 
+thresholdModel <- function(obj, threshold = 0) {
+  owl.obj <- obj
+  
+  nbeta <- length(owl.obj$model$beta)
+  for (i in 1:nbeta) {
+    owl.obj$model$beta[[i]][abs(owl.obj$model$beta[[i]]) < threshold] <- 0
+  }
+  owl.obj
+}
+
 predict.owlfit <- function(object, type.measure = c("class", "value", "aic", "deviance", "optimal"), ...) {
   type.measure <- match.arg(type.measure)
   lam <- switch(type.measure,
