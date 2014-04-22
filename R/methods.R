@@ -93,9 +93,9 @@ plot.owlfit <- function(x) {
   value.lam <- -1 * x$value.lambda
   aic.lam <- -1 * x$aic.lambda
 
-  class.text.y.p2 <- (x$model$df[x$class.lambda.idx] + max(x$model$df)) / 2.5
-  value.text.y.p2 <- (x$model$df[x$value.lambda.idx] + max(x$model$df)) / 2.5
-  aic.text.y.p2 <- (x$model$df[x$aic.lambda.idx] + max(x$model$df)) / 2.5
+  class.text.y.p2 <- (dfs[x$class.lambda.idx] + max(dfs)) / 2.5
+  value.text.y.p2 <- (dfs[x$value.lambda.idx] + max(dfs)) / 2.5
+  aic.text.y.p2 <- (dfs[x$aic.lambda.idx] + max(dfs)) / 2.5
   value.text <- if(class.lam == value.lam) {""} else ("\n Value Func. Selection")
   
   vline.dat <- data.frame(value.lam = value.lam, class.lam = class.lam,
