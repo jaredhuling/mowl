@@ -69,7 +69,7 @@ print.owlfit <- function(obj, xtable = FALSE,  ...) {
 }
 
 
-plot.owlfit <- function(x) {
+plot.owlfit <- function(x, log.scale = FALSE) {
   #K <- nrow(obj$d.vals)
   #nonan <- obj$d.vals; nonan[is.nan(nonan)] <- mean(nonan[!is.nan(nonan)])
   #ylims <- c(min(na.omit(obj$d.vals))-0.25 * sd(nonan[!is.nan(nonan)]), max(na.omit(obj$d.vals)+0.25 * sd(nonan[!is.nan(nonan)])))
@@ -84,24 +84,32 @@ plot.owlfit <- function(x) {
   
   n.trt <- nrow(x$d.vals)
   n.lam <- ncol(x$d.vals)
-  d.vals <- numeric(length = (n.trt) * n.lam)
+  d.vals <- numeric(length = (n.trt * n.lam))
   for (i in 1:(nrow(x$d.vals))) {
     d.vals[((i-1) * n.lam + 1):(i * n.lam)] <- x$d.vals[i,]
   }
   
   dfs <- if(inherits(x$model, "msgl")) {df.msgl(x$model)} else {x$model$df}
   
-  dvaldat <- data.frame(dvals = d.vals, 
-                        treatment = rep(as.character(1:4), each = ncol(x$d.vals)),
-                        df = rep(dfs, nrow(x$d.vals)),
-                        lambda = rep(x$model$lambda, nrow(x$d.vals)))
+  if (log.scale) {
+    class.lam <- -1 * log(x$class.lambda)
+    value.lam <- -1 * log(x$value.lambda)
+    aic.lam <- -1 * log(x$aic.lambda)
+    lams <- rep(log(x$model$lambda), n.trt)
+  } else {
+    class.lam <- -1 * x$class.lambda
+    value.lam <- -1 * x$value.lambda
+    aic.lam <- -1 * x$aic.lambda
+    lams <- rep(x$model$lambda, n.trt)
+  }
   
-  dfdat <- data.frame(df = rep(dfs, nrow(x$d.vals)),
-                      lambda = rep(x$model$lambda, nrow(x$d.vals)))
-
-  class.lam <- -1 * x$class.lambda
-  value.lam <- -1 * x$value.lambda
-  aic.lam <- -1 * x$aic.lambda
+  dvaldat <- data.frame(dvals = d.vals, 
+                        treatment = rep(as.character(1:4), each = n.lam),
+                        df = rep(dfs, n.trt),
+                        lambda = lams)
+  
+  dfdat <- data.frame(df = rep(dfs, n.trt),
+                      lambda = lams)
 
   class.text.y.p2 <- (dfs[x$class.lambda.idx] + max(dfs)) / 2.5
   value.text.y.p2 <- (dfs[x$value.lambda.idx] + max(dfs)) / 2.5
@@ -114,8 +122,10 @@ plot.owlfit <- function(x) {
                           value.text.y.p2 = value.text.y.p2,
                           aic.text.y.p2 = aic.text.y.p2)
   
+  x.label <- if (log.scale) {"-log(lambda)"} else {"-lambda"}
+  
   p1 <- ggplot(aes(x = -lambda, y = dvals, color = treatment), data = dvaldat) + geom_line(size=1.2) + 
-    theme_bw() + theme(legend.position = "bottom") + 
+    theme_bw() + theme(legend.position = "bottom") + xlab(x.label) +
     geom_vline(aes(xintercept = class.lam), data = vline.dat) +
     geom_vline(aes(xintercept = value.lam), data = vline.dat) +
     geom_vline(aes(xintercept = aic.lam), data = vline.dat)
@@ -123,7 +133,7 @@ plot.owlfit <- function(x) {
 
   
   p2 <- ggplot(aes(x = -lambda, y = df), data = dfdat) + geom_line(size=1.2) + theme_bw() +
-    geom_vline(aes(xintercept = class.lam), data = vline.dat) +
+    geom_vline(aes(xintercept = class.lam), data = vline.dat) + xlab(x.label) +
     geom_text(aes(x = class.lam, label="\n Misclassification Selection", y = class.text.y.p2),
               data = vline.dat,
               colour="blue", angle=90, text=element_text(size=11)) +
