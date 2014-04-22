@@ -80,22 +80,35 @@ modelMatrixNeg <- function(data, interaction = FALSE) {
   groups <- rep(NA, ncol(x.ret))
   k <- 0
   factor.int.groups <- NULL
+  for (i in 1:length(factornames)) {
+    pattern <- paste(factornames[i], "[^:]*$", sep = "")
+    factor.locs <- grep(pattern, colnames(x.ret))
+    groups[factor.locs] <- i
+  }
+  ig <- 1
   for (i in 1:(p - 1)) {
     for (j in (i + 1):p) {
       k <- k + 1
       x.ret[,p + k] <- x[,i] * x[,j]
       v1.root <- vn[which(pmatch(vn, colx[i]) == 1)]
       v2.root <- vn[which(pmatch(vn, colx[j]) == 1)]
-      
+      if (any(!is.na(match(c(v1.root, v2.root), factornames)))) {
+        gr <- paste(v1.root, v2.root, sep = "_")
+        if (is.null(factor.int.groups)) {
+          factor.int.groups[1] <- gr
+        } else {
+          if (is.na(match(gr, factor.int.groups))) {
+            ig <- ig + 1
+            factor.int.groups[ig] <- gr
+          }
+        }
+        groups[p + k] <- match(gr, factor.int.groups) + length(factornames)
+      }
       colnames(x.ret)[p + k] <- paste(colx[i], colx[j], sep = ":")
     }
   }
   
-  for (i in 1:length(factornames)) {
-    pattern <- paste(factornames[i], "[^:]*$", sep = "")
-    factor.locs <- grep(pattern, colnames(x.ret))
-    groups[factor.locs] <- i
-  }
+
   names(groups) <- colnames(x.ret)
   attr(x.ret, "groups") <- groups
   x.ret
