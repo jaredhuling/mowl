@@ -1,7 +1,7 @@
 
 mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, 
                      seed = 123, oracle = NULL, verbose = FALSE, 
-                     alpha = if(is.null(groups)) {1} else {0.5}, ...) {
+                     alpha = if(is.null(groups)) {1} else {0.5}, threshold = 0, ...) {
   
   thiscall <- match.call()
   weights <- y * 3
@@ -25,6 +25,10 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
                                    parameterWeights = pw, alpha = alpha, d = 100, lambda.min = 1e-2)
     model <- msgl(x, classes = A, sampleWeights = weights, groupWeights = gw, grouping = grouping,
                   parameterWeights = pw, alpha = alpha, lambda = msgl.lambda, algorithm.config = config, ...)
+  }
+  
+  if (threshold > 0) {
+    model <- thresholdModel(model)
   }
   
   if (!is.null(oracle)) {
@@ -65,6 +69,10 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
     } else {
       fit.fold <- msgl(x.train, classes = A.train, sampleWeights = w.train, groupWeights = gw, 
                        grouping = grouping, parameterWeights = pw, alpha = alpha, lambda = msgl.lambda, algorithm.config = config)
+    }
+    
+    if (threshold > 0) {
+      fit.fold <- thresholdModel(fit.fold)
     }
     
     if (!is.null(groups)) {
