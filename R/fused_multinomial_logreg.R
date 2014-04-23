@@ -93,8 +93,8 @@ groupMultinomLogReg <- function(x, y, weights = rep(1, nrow(x)), groups = NULL,
 
 
 groupFusedMultinomLogReg <- function(x, y, weights, groups = NULL,
-                                     lambda = NULL, nlambda = 100,
-                                     lambda.lasso = 0, lambda.fused = 0,
+                                     lambda = NULL, nlambda.group = 50,
+                                     nlambda.fused = 21,
                                      intercept = TRUE,
                                      irls.maxiter = 30, irls.tol = 1e-10,
                                      fused.maxiter = 500, fused.tol = 1e-10,
@@ -104,12 +104,16 @@ groupFusedMultinomLogReg <- function(x, y, weights, groups = NULL,
   
   classes <- levels(y)
   
+  # select groups with Multinomial logistic regression 
+  # with group lasso penalty
   gmlr <- groupMultinomLogReg(x, y, weights = weights, groups = groups, 
-                              intercept = FALSE, nlambda = 50,
+                              intercept = FALSE, nlambda = nlambda.group,
                               irls.maxiter = irls.maxiter, irls.tol = irls.tol)
   
   cat("group lasso stage complete \n")
   
+  # find all unique combinations of selected groups
+  # from group lasso penalty
   in.groups <- vector(mode = "list", length = length(gmlr))
   grps <- sort(unique(groups))
   for (i in 1:length(gmlr)) {
@@ -129,20 +133,23 @@ groupFusedMultinomLogReg <- function(x, y, weights, groups = NULL,
   }
   groups.in <- unique(in.groups)
   
+  # encourage sparsity with fused sparse lasso
+  # with fused lasso penalty applied within groups
   fused.fit <- fusedMultinomLogRegSecond(x, y, weights = weights,
                                          groups = groups, intercept = intercept,
-                                         lambda.lasso = lambda.lasso, lambda.fused = lambda.fused,
+                                         nlambda = nlambda.fused, lambda = lambda,
                                          irls.maxiter = irls.maxiter, irls.tol = irls.tol, 
                                          fused.maxiter = fused.maxiter, fused.tol = fused.tol,
                                          groups.in = groups.in)
   
-  structure(list(coefficients = fused.fit, lambda.lasso = lambda.lasso,
-                 lambda.fused = lambda.fused, classes = classes), class = "groupSparseFusedFit")
+  structure(list(coefficients = fused.fit$beta, lambda = fusedfit$lambda,
+                 classes = classes, fused.iters = fused.fit$iters), class = "groupSparseFusedFit")
 }
 
 
 fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = NULL,
-                                      lambda.lasso = 0, lambda.fused = 0,
+                                      nlambda = 21,
+                                      lambda = NULL,
                                       intercept = TRUE,
                                       irls.maxiter = 30, irls.tol = 1e-10, 
                                       fused.maxiter = 500, fused.tol = 1e-10,
@@ -153,6 +160,17 @@ fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = 
   K <- length(classes)
   G <- length(groups.in)
   
+  if (!is.null(lambda)) {
+    stopifnot(length(lambda) == 2)
+    lambda <- matrix(lambda, ncol = 2)
+    colnames(lambda) <- c("lambda.lasso", "lambda.fused")
+    nlambda <- 1
+  } else {
+    # generate a lattice of 21 combinations
+    # of tuning parameters based on a Unif Design
+    lambda <- genLambdaLattice(nlambda)
+  }
+  
   nobs <- nrow(x)
   nvars <- ncol(x)
   len <- if (intercept) {nvars + 1} else {nvars}
@@ -162,70 +180,84 @@ fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = 
   w <- rep(0.5, nobs)
   betas <- if(is.null(beta.init)) {array(1, dim = c(K, len))} else {beta.init}
   beta <- betas[1,]
-  beta.list <- vector(mode = "list", length = G)
+  beta.list <- iter.list <- vector(mode = "list", length = G)
+  names(beta.list) <- as.character(1:G)
   grps <- sort(unique(groups))
   
   for (g in 1:G) {
-    converged <- rep(FALSE, K)
-    for (i in 1:irls.maxiter) {
-      prev <- betas
-      for (k in 1:K) {
-        
-        if (!converged[k]) { 
-          
-          which.groups <- grps[which(groups.in[[g]][k, ])]
-          in.idx <- which(groups %in% which.groups | is.na(groups))
-          groups.current <- groups[in.idx]
-          
-          y.working <- 1 * (y.f == classes[k]) * sqrt(weights)
-          
-          init <- if (intercept) {prev[k,-1]} else {prev[k,]}
-          
-          beta.tmp <- fusedLassoRidge(sqrt(weights) * x[,in.idx], y.working, 
-                                      w, groups = groups.current,
-                                      lambda.lasso = lambda.lasso, 
-                                      lambda.fused = lambda.fused,
-                                      maxiter = fused.maxiter,
-                                      intercept = FALSE,
-                                      tol = fused.tol, beta.init = init[in.idx])
-          
-          if (intercept) {
-            beta[in.idx + 1] <- beta.tmp
-          } else {
-            beta[in.idx] <- beta.tmp
-          }
-          
-          
-          if (intercept) {
-            xwb.tmp <- drop(x %*% beta[-1])
-            beta[1] <- mean( y.working - xwb.tmp)
-            xwb <- xwb.tmp + beta[1]
-          } else {
-            xwb <- drop(x %*% beta)
-          }
-          
-          # update weights
-          p <- 1 / (1 + exp(-xwb))
-          w <- p * (1 - p)
-          
-          y.working <- xwb + (y - p) / w
-          
-          betas[k,] <- beta
-          
-          if (all(abs(beta - prev[k,]) < fused.tol)) {
-            converged[k] <- TRUE
-          }
-          
-        }
-      }
-      if (all(converged)) {
-        cat("IRLS Converged at iteration: ", i, "\n")
-        break
-      }
+    
+    beta.tmp.list <- iter.tmp.list <- vector(mode = "list", length = nlambda)
+    
+    
+    for (l in 1:nlambda) {
+      current.lambdas <- lambda[l,]
       
-    } #end IRLS loop
-    beta.list[[g]] <- betas
-  }
-  beta.list
+      converged <- rep(FALSE, K)
+      for (i in 1:irls.maxiter) {
+        prev <- betas
+        for (k in 1:K) {
+          
+          if (!converged[k]) { 
+            
+            which.groups <- grps[which(groups.in[[g]][k, ])]
+            in.idx <- which(groups %in% which.groups | is.na(groups))
+            groups.current <- groups[in.idx]
+            
+            y.working <- 1 * (y.f == classes[k]) * sqrt(weights)
+            
+            init <- if (intercept) {prev[k,-1]} else {prev[k,]}
+            
+            beta.tmp <- fusedLassoRidge(sqrt(weights) * x[,in.idx], y.working, 
+                                        w, groups = groups.current,
+                                        lambda.lasso = current.lambdas[1], 
+                                        lambda.fused = current.lambdas[2],
+                                        maxiter = fused.maxiter,
+                                        intercept = FALSE,
+                                        tol = fused.tol, beta.init = init[in.idx])
+            
+            if (intercept) {
+              beta[in.idx + 1] <- beta.tmp
+            } else {
+              beta[in.idx] <- beta.tmp
+            }
+            
+            
+            if (intercept) {
+              xwb.tmp <- drop(x %*% beta[-1])
+              beta[1] <- mean( y.working - xwb.tmp)
+              xwb <- xwb.tmp + beta[1]
+            } else {
+              xwb <- drop(x %*% beta)
+            }
+            
+            # update weights
+            p <- 1 / (1 + exp(-xwb))
+            w <- p * (1 - p)
+            
+            y.working <- xwb + (y - p) / w
+            
+            betas[k,] <- beta
+            
+            if (all(abs(beta - prev[k,]) < fused.tol)) {
+              converged[k] <- TRUE
+            }
+            
+          }
+        }
+        if (all(converged)) {
+          cat("IRLS Converged at iteration: ", i, "\n")
+          break
+        }
+        
+      } # end IRLS loop
+      attr(betas, "tuning.values") <- current.lambdas
+      beta.tmp.list[[l]] <- betas
+      iter.tmp.list[[l]] <- i
+      
+    } # end loop over tuning parameter combinations
+    beta.list[[g]] <- beta.tmp.list
+    iter.list[[g]] <- iter.tmp.list
+  } # end loop over group-lasso values
+  list(beta = beta.list, lambda = lambda, iters = iter.list)
 }
 
