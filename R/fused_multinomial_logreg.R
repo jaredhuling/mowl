@@ -1,4 +1,4 @@
-groupMultinomLogReg <- function(x, y, groups = NULL,
+groupMultinomLogReg <- function(x, y, weights = rep(1, nrow(x)), groups = NULL,
                                 lambda = NULL, nlambda = 100,
                                 intercept = TRUE, verbose = FALSE,
                                 irls.maxiter = 30, irls.tol = 1e-10,
@@ -38,12 +38,12 @@ groupMultinomLogReg <- function(x, y, groups = NULL,
       prev <- betas
       for (k in 1:K) {
         if (!converged[k]) { 
-          y.working <- 1 * (y.f == classes[k])
+          y.working <- 1 * (y.f == classes[k]) * sqrt(weights)
           
           init <- if (intercept) {prev[k,-1]} else {prev[k,]}
           
           invisible(capture.output(suppressWarnings(
-            beta.tmp <- drop(grplasso(x, y.working, index = group.vec, center = FALSE, coef.init = init,
+            beta.tmp <- drop(grplasso(sqrt(weights) * x, y.working, index = group.vec, center = FALSE, coef.init = init,
                                       model = LinReg(), lambda = lambda[l], weights = w)$coefficients))))
           
           if (intercept) {
@@ -87,7 +87,7 @@ groupMultinomLogReg <- function(x, y, groups = NULL,
 
 
 
-groupFusedMultinomLogReg <- function(x, y, groups = NULL,
+groupFusedMultinomLogReg <- function(x, y, weights, groups = NULL,
                                      lambda = NULL, nlambda = 100,
                                      lambda.lasso = 0, lambda.fused = 0,
                                      intercept = TRUE,
@@ -99,7 +99,8 @@ groupFusedMultinomLogReg <- function(x, y, groups = NULL,
   
   classes <- levels(y)
   
-  gmlr <- groupMultinomLogReg(x, y, groups = groups, intercept = FALSE, nlambda = 50,
+  gmlr <- groupMultinomLogReg(x, y, weights = weights, groups = groups, 
+                              intercept = FALSE, nlambda = 50,
                               irls.maxiter = irls.maxiter, irls.tol = irls.tol)
   
   cat("group lasso stage complete \n")
@@ -123,7 +124,8 @@ groupFusedMultinomLogReg <- function(x, y, groups = NULL,
   }
   groups.in <- unique(in.groups)
   
-  fused.fit <- fusedMultinomLogRegSecond(x, y, groups = groups, intercept = intercept,
+  fused.fit <- fusedMultinomLogRegSecond(x, y, weights = weights,
+                                         groups = groups, intercept = intercept,
                                          lambda.lasso = lambda.lasso, lambda.fused = lambda.fused,
                                          irls.maxiter = irls.maxiter, irls.tol = irls.tol, 
                                          fused.maxiter = fused.maxiter, fused.tol = fused.tol,
@@ -134,7 +136,7 @@ groupFusedMultinomLogReg <- function(x, y, groups = NULL,
 }
 
 
-fusedMultinomLogRegSecond <- function(x, y, groups = NULL,
+fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = NULL,
                                       lambda.lasso = 0, lambda.fused = 0,
                                       intercept = TRUE,
                                       irls.maxiter = 30, irls.tol = 1e-10, 
@@ -169,11 +171,12 @@ fusedMultinomLogRegSecond <- function(x, y, groups = NULL,
           in.idx <- which(groups %in% which.groups | is.na(groups))
           groups.current <- groups[in.idx]
           
-          y.working <- 1 * (y.f == classes[k])
+          y.working <- 1 * (y.f == classes[k]) * sqrt(weights)
           
           beta <- init <- if (intercept) {prev[k,-1]} else {prev[k,]}
           
-          beta.tmp <- fusedLassoRidge(x[,in.idx], y.working, w, groups = groups.current,
+          beta.tmp <- fusedLassoRidge(sqrt(weights) * x[,in.idx], y.working, 
+                                      w, groups = groups.current,
                                       lambda.lasso = lambda.lasso, 
                                       lambda.fused = lambda.fused,
                                       maxiter = fused.maxiter,
