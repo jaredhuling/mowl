@@ -48,7 +48,7 @@ groupMultinomLogReg <- function(x, y, weights = rep(1, nrow(x)), groups = NULL,
           init <- if (intercept) {prev[k,-1]} else {prev[k,]}
           
           invisible(capture.output(suppressWarnings(
-            beta.tmp <- drop(grplasso(sqrt(weights) * x, y.working, index = group.vec, center = FALSE, coef.init = init,
+            beta.tmp <- drop(grplasso(sqrt(weights) * x, y.working, index = groups, center = FALSE, coef.init = init,
                                       model = LinReg(), lambda = lambda[l], weights = w)$coefficients))))
           
           if (intercept) {
