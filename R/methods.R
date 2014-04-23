@@ -105,7 +105,13 @@ plot.owlfit <- function(x, log.scale = FALSE) {
     d.vals[((i-1) * n.lam + 1):(i * n.lam)] <- x$d.vals[i,]
   }
   
-  dfs <- if(inherits(x$model, "msgl")) {df.msgl(x$model)} else {x$model$df}
+  if(inherits(x$model, "msgl")) {
+    dfs <- df.msgl(x$model)
+    trt.names <- dimnames(mod21g$model$beta[[1]])[[1]]
+  } else {
+    dfs <- x$model$df
+    trt.names <- names(mod21$model$beta)
+  }
   
   if (log.scale) {
     class.lam <- -1 * log(x$class.lambda)
@@ -120,7 +126,7 @@ plot.owlfit <- function(x, log.scale = FALSE) {
   }
   
   dvaldat <- data.frame(dvals = d.vals, 
-                        treatment = rep(as.character(1:4), each = n.lam),
+                        treatment = rep(trt.names, each = n.lam),
                         df = rep(dfs, n.trt),
                         lambda = lams)
   
