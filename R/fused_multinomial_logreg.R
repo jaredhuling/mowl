@@ -4,6 +4,13 @@ groupMultinomLogReg <- function(x, y, weights = rep(1, nrow(x)), groups = NULL,
                                 irls.maxiter = 30, irls.tol = 1e-10,
                                 beta.init = NULL) {
   
+  y.f <- as.factor(y)
+  classes <- levels(y.f)
+  K <- length(classes)
+  
+  nobs <- nrow(x)
+  nvars <- ncol(x)
+  
   if (is.null(lambda)) {
     invisible(capture.output(suppressWarnings(
       lambda.max <- 2 * lambdamax(x, y, index = groups, model = LinReg(), center = FALSE))))
@@ -18,12 +25,7 @@ groupMultinomLogReg <- function(x, y, weights = rep(1, nrow(x)), groups = NULL,
   }
   
   
-  y.f <- as.factor(y)
-  classes <- levels(y.f)
-  K <- length(classes)
-  
-  nobs <- nrow(x)
-  nvars <- ncol(x)
+
   len <- if (intercept) {nvars + 1} else {nvars}
   if (!is.null(beta.init)) {
     stopifnot(all(dim(beta.init) == c(K, len)))
