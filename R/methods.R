@@ -54,7 +54,7 @@ predict.groupSparseFusedFit <- function(obj, newx, group.idx, lambda.idx = NULL,
     #int <- coefs[[lambda.idx]][,1]
     coefs.nb <- coefs[[lambda.idx]][,-1]
     int <- coefs[[lambda.idx]][,1]
-    prob.num <- exp(newx %*% coefs.nb)
+    prob.num <- exp(newx %*% t(coefs.nb))
     prob <- prob.num / rowSums(prob.num)
     class <- apply(prob, 1, function(x) classes[which.max(x)])
     ret <- switch(type,
