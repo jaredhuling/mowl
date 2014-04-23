@@ -160,7 +160,7 @@ fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = 
     stopifnot(all(dim(beta.init) == c(K, len)))
   }
   w <- rep(0.5, nobs)
-  betas <- if(is.null(beta.init)) {array(1, dim = c(K, len))} else {beta.init}\
+  betas <- if(is.null(beta.init)) {array(1, dim = c(K, len))} else {beta.init}
   beta <- betas[1,]
   beta.list <- vector(mode = "list", length = G)
   grps <- sort(unique(groups))
