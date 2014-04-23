@@ -160,7 +160,8 @@ fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = 
     stopifnot(all(dim(beta.init) == c(K, len)))
   }
   w <- rep(0.5, nobs)
-  betas <- if(is.null(beta.init)) {array(1, dim = c(K, len))} else {beta.init}
+  betas <- if(is.null(beta.init)) {array(1, dim = c(K, len))} else {beta.init}\
+  beta <- betas[1,]
   beta.list <- vector(mode = "list", length = G)
   grps <- sort(unique(groups))
   
@@ -178,7 +179,7 @@ fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = 
           
           y.working <- 1 * (y.f == classes[k]) * sqrt(weights)
           
-          beta <- init <- if (intercept) {prev[k,-1]} else {prev[k,]}
+          init <- if (intercept) {prev[k,-1]} else {prev[k,]}
           
           beta.tmp <- fusedLassoRidge(sqrt(weights) * x[,in.idx], y.working, 
                                       w, groups = groups.current,
