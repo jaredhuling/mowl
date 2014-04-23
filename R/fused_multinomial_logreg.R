@@ -142,7 +142,7 @@ groupFusedMultinomLogReg <- function(x, y, weights, groups = NULL,
                                          fused.maxiter = fused.maxiter, fused.tol = fused.tol,
                                          groups.in = groups.in)
   
-  structure(list(coefficients = fused.fit$beta, lambda = fusedfit$lambda,
+  structure(list(coefficients = fused.fit$beta, lambda = fused.fit$lambda,
                  classes = classes, fused.iters = fused.fit$iters), class = "groupSparseFusedFit")
 }
 
