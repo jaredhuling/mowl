@@ -5,6 +5,9 @@ groupMultinomLogReg <- function(x, y, weights = rep(1, nrow(x)), groups = NULL,
                                 beta.init = NULL) {
   
   y.f <- as.factor(y)
+  if (is.factor(y)) {
+    y <- as.numeric(levels(y)[y])
+  }
   classes <- levels(y.f)
   K <- length(classes)
   
