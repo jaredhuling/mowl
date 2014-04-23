@@ -44,10 +44,10 @@ predict.groupSparseFusedFit <- function(obj, newx, group.idx, lambda.idx = NULL,
       #int <- coefs[[i]][,1]
       coefs.nb <- coefs[,-1]
       int <- coefs[,1]
-      prob.num <- exp(newx %*% coefs.nb)
+      prob.num <- exp(newx %*% t(coefs.nb))
       prob <- prob.num / rowSums(prob.num)
-      classes <- apply(prob, 1, function(x) classes[which.max(x)])
-      ret[, i] <- classes
+      class <- apply(prob, 1, function(x) classes[which.max(x)])
+      ret[, i] <- class
     }
   } else {
     #coefs.nb <- coefs[[lambda.idx]][,-1]
@@ -56,7 +56,7 @@ predict.groupSparseFusedFit <- function(obj, newx, group.idx, lambda.idx = NULL,
     int <- coefs[[lambda.idx]][,1]
     prob.num <- exp(newx %*% coefs.nb)
     prob <- prob.num / rowSums(prob.num)
-    classes <- apply(prob, 1, function(x) classes[which.max(x)])
+    class <- apply(prob, 1, function(x) classes[which.max(x)])
     ret <- switch(type,
                   class = class,
                   response = prob)
