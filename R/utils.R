@@ -115,7 +115,7 @@ modelMatrix <- function(data, interaction = FALSE, zero.one = TRUE) {
   }
   if (n.bad.ints > 0) {
     x.ret <- x.ret[,-((ncol(x.ret) - n.bad.ints +1):(ncol(x.ret)))]
-    groupa <- groups[-((length(groups) - n.bad.ints +1):(length(groups)))]
+    groups <- groups[-((length(groups) - n.bad.ints +1):(length(groups)))]
   }
   
 
