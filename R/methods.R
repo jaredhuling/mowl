@@ -28,6 +28,36 @@ thresholdModel <- function(obj, threshold = 0) {
   owl.obj
 }
 
+predict.groupSparseFusedFit <- function(obj, xnew, group.idx, lambda.idx = NULL, type = ("class", "response")) {
+  
+  type <- match.arg(type)
+  coefs <- obj$coefficients[[group.idx]]
+  nlam <- length(coefs)
+  classes <- obj$classes
+  n <- nrow(xnew)
+  
+  if (is.null(lambda.idx)) {
+    ret <- array(NA, dim = c(n, nlam))
+    for (i in 1:nlam) {
+      coefs.nb <- coefs[[i]][,-1]
+      int <- coefs[[i]][,1]
+      prob.num <- exp(xnew %*% coefs.nb)
+      prob <- prob.num / rowSums(prob.num)
+      classes <- apply(prob, 1, function(x) classes[which.max(x)])
+      ret[, i] <- classes
+    }
+  } else {
+    coefs.nb <- coefs[[lambda.idx]][,-1]
+    int <- coefs[[lambda.idx]][,1]
+    prob.num <- exp(xnew %*% coefs.nb)
+    prob <- prob.num / rowSums(prob.num)
+    classes <- apply(prob, 1, function(x) classes[which.max(x)])
+    ret <- switch(type,
+                  class = class,
+                  response = prob)
+  }
+  ret
+}
 
 predict.owlfit <- function(object, type.measure = c("class", "value", "aic", "deviance", "optimal"), ...) {
   type.measure <- match.arg(type.measure)
@@ -38,8 +68,10 @@ predict.owlfit <- function(object, type.measure = c("class", "value", "aic", "de
                 optimal = object$optimal.lambda)
   if (inherits(object$model, "msgl")) {
     predict(object$model, ...)$classes[,which(object$model$lambda == lam)]
-  } else {
+  } else if (inherits(object$model, "msgl")){
     predict(object$model, s = lam, ...)
+  } else if (inherits(object$model, "groupSparseFusedFit")) {
+    
   }
 }
 

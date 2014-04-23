@@ -95,6 +95,10 @@ groupFusedMultinomLogReg <- function(x, y, groups = NULL,
                                      fused.maxiter = 500, fused.tol = 1e-10,
                                      beta.init = NULL) {
   
+  y <- as.factor(y)
+  
+  classes <- levels(y)
+  
   gmlr <- groupMultinomLogReg(x, y, groups = groups, intercept = FALSE, nlambda = 50,
                               irls.maxiter = irls.maxiter, irls.tol = irls.tol)
   
@@ -126,7 +130,7 @@ groupFusedMultinomLogReg <- function(x, y, groups = NULL,
                                          groups.in = groups.in)
   
   structure(list(coefficients = fused.fit, lambda.lasso = lambda.lasso,
-                 lambda.fused = lambda.fused), class = "groupSparseFusedFit")
+                 lambda.fused = lambda.fused, classes = classes), class = "groupSparseFusedFit")
 }
 
 
