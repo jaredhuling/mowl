@@ -156,6 +156,7 @@ fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = 
                                       beta.init = NULL, groups.in = NULL) {
   
   y.f <- as.factor(y)
+  y <- levels(y.f)[y.f]
   classes <- levels(y.f)
   K <- length(classes)
   G <- length(groups.in)
