@@ -197,7 +197,7 @@ fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = 
         prev <- betas
         for (k in 1:K) {
           
-          if (!converged[k]) { 
+          if (!converged[k]) {
             
             which.groups <- grps[which(groups.in[[g]][k, ])]
             in.idx <- which(groups %in% which.groups | is.na(groups))
@@ -245,7 +245,7 @@ fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = 
           }
         }
         if (all(converged)) {
-          cat("IRLS Converged at iteration: ", i, "\n")
+          #cat("IRLS Converged at iteration: ", i, "\n")
           break
         }
         
@@ -255,6 +255,7 @@ fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = 
       iter.tmp.list[[l]] <- i
       
     } # end loop over tuning parameter combinations
+    cat("Group-lasso model", g,  "converged", "\n")
     beta.list[[g]] <- beta.tmp.list
     iter.list[[g]] <- iter.tmp.list
   } # end loop over group-lasso values
