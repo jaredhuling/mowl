@@ -88,26 +88,33 @@ modelMatrix <- function(data, interaction = FALSE, zero.one = TRUE) {
     groups[factor.locs] <- i
   }
   ig <- 1
+  n.bad.ints <- 0
   for (i in 1:(p - 1)) {
     for (j in (i + 1):p) {
-      k <- k + 1
-      x.ret[,p + k] <- x[,i] * x[,j]
       v1.root <- vn[which(pmatch(vn, colx[i]) == 1)]
       v2.root <- vn[which(pmatch(vn, colx[j]) == 1)]
-      if (any(!is.na(match(c(v1.root, v2.root), factornames)))) {
-        gr <- paste(v1.root, v2.root, sep = "_")
-        if (is.null(factor.int.groups)) {
-          factor.int.groups[1] <- gr
-        } else {
-          if (is.na(match(gr, factor.int.groups))) {
-            ig <- ig + 1
-            factor.int.groups[ig] <- gr
+      if (v1.root != v2.root) {
+        k <- k + 1
+        x.ret[,p + k] <- x[,i] * x[,j]
+  
+        if (any(!is.na(match(c(v1.root, v2.root), factornames)))) {
+          gr <- paste(v1.root, v2.root, sep = "_")
+          if (is.null(factor.int.groups)) {
+            factor.int.groups[1] <- gr
+          } else {
+            if (is.na(match(gr, factor.int.groups))) {
+              ig <- ig + 1
+              factor.int.groups[ig] <- gr
+            }
           }
+          groups[p + k] <- match(gr, factor.int.groups) + length(factornames)
         }
-        groups[p + k] <- match(gr, factor.int.groups) + length(factornames)
-      }
-      colnames(x.ret)[p + k] <- paste(colx[i], colx[j], sep = ":")
+        colnames(x.ret)[p + k] <- paste(colx[i], colx[j], sep = ":")
+      } else {n.bad.ints <- n.bad.ints + 1}
     }
+  }
+  if (n.bad.ints > 0) {
+    x.ret <- x.ret[,-(ncol(x.ret) - n.bad.ints +1):(ncol(x.ret))]
   }
   
 
