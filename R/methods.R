@@ -28,7 +28,7 @@ thresholdModel <- function(obj, threshold = 0) {
   owl.obj
 }
 
-predict.groupSparseFusedFit <- function(obj, xnew, group.idx, lambda.idx = NULL, type = ("class", "response")) {
+predict.groupSparseFusedFit <- function(obj, xnew, group.idx, lambda.idx = NULL, type = c("class", "response")) {
   
   type <- match.arg(type)
   coefs <- obj$coefficients[[group.idx]]
