@@ -19,9 +19,9 @@ genLambdaLattice <- function(nlambda = 21) {
   h=c(1,h)
   
   # set up lattice
-  ud <- matrix(NA, nrow = n.lambda, ncol = 2)
+  ud <- matrix(NA, nrow = nlambda, ncol = 2)
   for(s in 1:2){
-    ud[,s] <- ((1:n.lambda) * h[s] - 0.5) / n.lambda  
+    ud[,s] <- ((1:nlambda) * h[s] - 0.5) / nlambda  
   }
   ud <- ud - floor(ud)
   colnames(ud) <- c("lambda.lasso", "lambda.fused")
