@@ -95,9 +95,9 @@ mowl.fit.fused <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
     optimal.ind.d.tmp <- which.max(colSums(d.vals.tmp))
     optimal.ind.d.all[g] <- optimal.ind.d.tmp
     
-    d.optimal.tmp <- d.vals[, optimal.ind.d.tmp]
-    d.value.tmp <- d.vals[, class.ind.tmp]
-    d.class.tmp <- d.vals[, value.ind.tmp]
+    d.optimal.tmp <- d.vals.tmp[, optimal.ind.d.tmp]
+    d.value.tmp <- d.vals.tmp[, class.ind.tmp]
+    d.class.tmp <- d.vals.tmp[, value.ind.tmp]
     
     d.optimal.all[g] <- d.optimal.tmp
     d.value.all[g] <- d.value.tmp
