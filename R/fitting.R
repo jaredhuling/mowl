@@ -137,7 +137,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
 
 computeD <- function(obj, newx, outcome, actual.treatments, group.idx = NULL) {
   
-  nlams <- if(inherits(obj, "")) {
+  nlams <- if(inherits(obj, "groupSparseFusedFit")) {
     length(obj$coefficients[[1]])
   } else {
     length(obj$lambda)
