@@ -98,40 +98,43 @@ groupFusedMultinomLogReg <- function(x, y, weights, groups = NULL,
                                      intercept = TRUE,
                                      irls.maxiter = 30, irls.tol = 1e-10,
                                      fused.maxiter = 500, fused.tol = 1e-10,
-                                     beta.init = NULL) {
+                                     beta.init = NULL, groups.in = NULL) {
   
   y <- as.factor(y)
   
   classes <- levels(y)
   
-  # select groups with Multinomial logistic regression 
-  # with group lasso penalty
-  gmlr <- groupMultinomLogReg(x, y, weights = weights, groups = groups, 
-                              intercept = FALSE, nlambda = nlambda.group,
-                              irls.maxiter = irls.maxiter, irls.tol = irls.tol)
-  
-  cat("group lasso stage complete \n")
-  
-  # find all unique combinations of selected groups
-  # from group lasso penalty
-  in.groups <- vector(mode = "list", length = length(gmlr))
-  grps <- sort(unique(groups))
-  for (i in 1:length(gmlr)) {
-    grp.in.tmp <- array(dim = c(nrow(gmlr[[i]]), length(grps)))
-    for (g in 1:length(grps)) {
-      grp.locs <- which(groups %in% grps[g])
-      for (k in 1:nrow(gmlr[[i]])) {
-        grp.in <- if(all(abs(gmlr[[i]][k,grp.locs]) < 1e-10)) {
-          FALSE
-        } else {
-          TRUE
+  # only do group lasso if group combinations not found
+  if (is.null(groups.in) {
+    # select groups with Multinomial logistic regression 
+    # with group lasso penalty
+    gmlr <- groupMultinomLogReg(x, y, weights = weights, groups = groups, 
+                                intercept = FALSE, nlambda = nlambda.group,
+                                irls.maxiter = irls.maxiter, irls.tol = irls.tol)
+    
+    cat("group lasso stage complete \n")
+    
+    # find all unique combinations of selected groups
+    # from group lasso penalty
+    in.groups <- vector(mode = "list", length = length(gmlr))
+    grps <- sort(unique(groups))
+    for (i in 1:length(gmlr)) {
+      grp.in.tmp <- array(dim = c(nrow(gmlr[[i]]), length(grps)))
+      for (g in 1:length(grps)) {
+        grp.locs <- which(groups %in% grps[g])
+        for (k in 1:nrow(gmlr[[i]])) {
+          grp.in <- if(all(abs(gmlr[[i]][k,grp.locs]) < 1e-10)) {
+            FALSE
+          } else {
+            TRUE
+          }
+          grp.in.tmp[k, g] <- grp.in
         }
-        grp.in.tmp[k, g] <- grp.in
       }
+      in.groups[[i]] <- grp.in.tmp
     }
-    in.groups[[i]] <- grp.in.tmp
+    groups.in <- unique(in.groups)
   }
-  groups.in <- unique(in.groups)
   
   # encourage sparsity with fused sparse lasso
   # with fused lasso penalty applied within groups
@@ -143,7 +146,8 @@ groupFusedMultinomLogReg <- function(x, y, weights, groups = NULL,
                                          groups.in = groups.in)
   
   structure(list(coefficients = fused.fit$beta, lambda = fused.fit$lambda,
-                 classes = classes, fused.iters = fused.fit$iters), class = "groupSparseFusedFit")
+                 classes = classes, fused.iters = fused.fit$iters, groups.in = groups.in), 
+              class = "groupSparseFusedFit")
 }
 
 

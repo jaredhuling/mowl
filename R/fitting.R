@@ -1,14 +1,16 @@
 
 mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, 
-                     seed = 123, oracle = NULL, verbose = FALSE, 
+                     seed = 123, oracle = NULL, verbose = FALSE, fused = FALSE,
                      alpha = if(is.null(groups)) {1} else {0.5}, threshold = 0, ...) {
   
   thiscall <- match.call()
-  weights <- y * 3
+  
   nvars <- ncol(x)
   nobs <- nrow(x)
   K <- length(unique(A))
+  weights <- y * K
   
+
   if (is.null(groups)) {
     model <- glmnet(x, A, family = "multinomial", weights = weights, alpha = alpha, ...)
   } else {
@@ -32,11 +34,13 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
   }
   
   if (!is.null(oracle)) {
-    if (is.null(groups)) {
+    
+    if (inherits(model, "glmnet")) {
       preds <- predict(model, newx = x, type = "class", s = model$lambda)
     } else {
       preds <- predict(model, x = x)$classes
     }
+    
     pct.correct <- apply(preds, 2, function(x) mean(x == oracle))
     attr(pct.correct, "names") <- NULL
   }
@@ -65,10 +69,11 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
     
     if (is.null(groups)) {
       fit.fold <- glmnet(x.train, A.train, family = "multinomial", weights = w.train, 
-                          alpha = alpha, lambda = model$lambda)
+                          alpha = alpha, lambda = model$lambda, ...)
     } else {
       fit.fold <- msgl(x.train, classes = A.train, sampleWeights = w.train, groupWeights = gw, 
-                       grouping = grouping, parameterWeights = pw, alpha = alpha, lambda = msgl.lambda, algorithm.config = config)
+                       grouping = grouping, parameterWeights = pw, alpha = alpha, 
+                       lambda = msgl.lambda, algorithm.config = config, ...)
     }
     
     if (threshold > 0) {
