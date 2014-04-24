@@ -32,8 +32,7 @@ predict.groupSparseFusedFit <- function(obj, newx, group.idx, lambda.idx = NULL,
   
   type <- match.arg(type)
   coefs <- obj$coefficients[[group.idx]]
-  #nlam <- length(coefs)
-  nlam <- 1
+  nlam <- length(coefs)
   classes <- obj$classes
   n <- nrow(newx)
   
