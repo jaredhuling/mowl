@@ -105,7 +105,7 @@ groupFusedMultinomLogReg <- function(x, y, weights, groups = NULL,
   classes <- levels(y)
   
   # only do group lasso if group combinations not found
-  if (is.null(groups.in) {
+  if (is.null(groups.in)) {
     # select groups with Multinomial logistic regression 
     # with group lasso penalty
     gmlr <- groupMultinomLogReg(x, y, weights = weights, groups = groups, 
