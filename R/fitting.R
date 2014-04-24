@@ -136,6 +136,13 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
 
 
 computeD <- function(obj, newx, outcome, actual.treatments, group.idx = NULL) {
+  
+  nlams <- if(inherits(obj, "")) {
+    length(obj$coefficients[[1]])
+  } else {
+    length(obj$lambda)
+  }
+  
   if (is.factor(actual.treatments)) {
     t.vals <- sort(levels(actual.treatments))
     actual.treatments <- levels(actual.treatments)[actual.treatments]
@@ -150,7 +157,7 @@ computeD <- function(obj, newx, outcome, actual.treatments, group.idx = NULL) {
   } else if (inherits(obj, "groupSparseFusedFit")) {
     length(obj$classes)
   }
-  ret <- array(0, dim = c(K, length(obj$lambda)))
+  ret <- array(0, dim = c(K, nlams))
   rownames(ret) <- paste("d", 1:K, sep="")
   
   if (inherits(obj, "msgl")) {
@@ -164,7 +171,7 @@ computeD <- function(obj, newx, outcome, actual.treatments, group.idx = NULL) {
   
   for (i in 1:K) {
     agree.ind <- apply(predicted.treatments, 2, function(x) which(x == actual.treatments & x == t.vals[i]))
-    for (l in 1:length(obj$lambda)) {
+    for (l in 1:nlams) {
       ret[i, l] <- if (length(agree.ind) == 0 || length(agree.ind[[l]]) == 0) {NA} else 
                       {mean(outcome[agree.ind[[l]]]) - mean(outcome[-agree.ind[[l]]])}
     }
