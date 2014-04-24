@@ -74,7 +74,7 @@ mowl.fit.fused <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
   
   if (!is.null(oracle)) optimal.ind.all <- numeric(ngr)
   class.ind.all <- value.ind.all <- optimal.ind.d.all <- numeric(ngr)
-  d.optimal.all <- d.value.all <- d.class.all <- numeric(ngr)
+  d.optimal.all <- d.value.all <- d.class.all <- array(NA, dim = c(K, ngr))
   d.vals.all <- vector(mode = "list", length = ngr)
   max.pct.corrects <- numeric(ngr)
   
@@ -99,9 +99,9 @@ mowl.fit.fused <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
     d.value.tmp <- d.vals.tmp[, class.ind.tmp]
     d.class.tmp <- d.vals.tmp[, value.ind.tmp]
     
-    d.optimal.all[g] <- d.optimal.tmp
-    d.value.all[g] <- d.value.tmp
-    d.class.all[g] <- d.class.tmp
+    d.optimal.all[,g] <- d.optimal.tmp
+    d.value.all[,g] <- d.value.tmp
+    d.class.all[,g] <- d.class.tmp
     #d.aic <- d.vals[, aic.ind]
   }
   
