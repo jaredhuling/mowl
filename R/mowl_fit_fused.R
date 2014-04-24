@@ -18,10 +18,7 @@ mowl.fit.fused <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
   ngr <- length(model$coefficients)
   nlams <- length(model$coefficients[[1]])
   
-  if (threshold > 0) {
-    model <- thresholdModel(model, threshold)
-  }
-  
+
   if (!is.null(oracle)) {
     pct.correct <- array(NA, dim = c(ngr, nlams))
     for (g in 1:ngr) {
