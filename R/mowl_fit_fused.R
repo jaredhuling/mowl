@@ -146,7 +146,10 @@ mowl.fit.fused <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
               d.vals = d.vals.all,
               optimal.lambda.idx = optimal.ind,
               class.lambda.idx = class.ind,
-              value.lambda.idx = value.ind)
+              value.lambda.idx = value.ind,
+              optimal.lambda.idx.all = optimal.ind.d.all,
+              class.lambda.idx.all = class.ind.all,
+              value.lambda.idx.all = value.ind.all)
               #aic.lambda.idx = aic.ind)
   class(ret) <- "owlfit"
   ret
