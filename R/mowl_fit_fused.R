@@ -14,7 +14,7 @@ mowl.fit.fused <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
   if (is.null(groups)) {
     stop("You must specify the groups for group, fused lasso")
   }
-  model <- groupFusedMultinomLogReg(x, A, groups = groups, weights = weights)
+  model <- groupFusedMultinomLogReg(x, A, groups = groups, weights = weights, ...)
   ngr <- length(model$coefficients)
   nlams <- length(model$coefficients[[1]])
   
