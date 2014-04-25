@@ -173,7 +173,7 @@ fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = 
   } else {
     # generate a lattice of 21 combinations
     # of tuning parameters based on a Unif Design
-    lambda <- genLambdaLattice(nlambda)
+    lambda <- genLambdaLattice(nlambda) / sqrt(length(y))
   }
   
   nobs <- nrow(x)
