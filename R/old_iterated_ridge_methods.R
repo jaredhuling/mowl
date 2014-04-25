@@ -202,3 +202,136 @@ fusedMultinomLogReg <- function(x, y, groups = NULL,
   }
   betas
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+fusedMultinomLogRegSecondold <- function(x, y, weights = rep(1, nrow(x)), groups = NULL,
+                                         nlambda = 21,
+                                         lambda = NULL,
+                                         intercept = TRUE,
+                                         irls.maxiter = 30, irls.tol = 1e-10, 
+                                         fused.maxiter = 500, fused.tol = 1e-10,
+                                         beta.init = NULL, groups.in = NULL) {
+  
+  y.f <- as.factor(y)
+  y <- as.numeric(levels(y.f)[y.f])
+  classes <- levels(y.f)
+  K <- length(classes)
+  G <- length(groups.in)
+  
+  if (!is.null(lambda)) {
+    stopifnot(length(lambda) == 2)
+    lambda <- matrix(lambda, ncol = 2)
+    colnames(lambda) <- c("lambda.lasso", "lambda.fused")
+    nlambda <- 1
+  } else {
+    # generate a lattice of 21 combinations
+    # of tuning parameters based on a Unif Design
+    lambda <- genLambdaLattice(nlambda)
+  }
+  
+  nobs <- nrow(x)
+  nvars <- ncol(x)
+  len <- if (intercept) {nvars + 1} else {nvars}
+  if (!is.null(beta.init)) {
+    stopifnot(all(dim(beta.init) == c(K, len)))
+  }
+  w <- rep(0.5, nobs)
+  betas <- if(is.null(beta.init)) {array(1, dim = c(K, len))} else {beta.init}
+  beta <- betas[1,]
+  beta.list <- iter.list <- vector(mode = "list", length = G)
+  names(beta.list) <- as.character(1:G)
+  grps <- sort(unique(groups))
+  
+  for (g in 1:G) {
+    
+    beta.tmp.list <- iter.tmp.list <- vector(mode = "list", length = nlambda)
+    
+    
+    for (l in 1:nlambda) {
+      current.lambdas <- lambda[l,]
+      
+      converged <- rep(FALSE, K)
+      for (i in 1:irls.maxiter) {
+        prev <- betas
+        for (k in 1:K) {
+          
+          if (!converged[k]) {
+            
+            which.groups <- grps[which(groups.in[[g]][k, ])]
+            in.idx <- which(groups %in% which.groups | is.na(groups))
+            groups.current <- groups[in.idx]
+            
+            y.working <- 1 * (y.f == classes[k]) * sqrt(weights)
+            
+            init <- if (intercept) {prev[k,-1]} else {prev[k,]}
+            
+            beta.tmp <- fusedLassoRidge(sqrt(weights) * x[,in.idx], y.working, 
+                                        w, groups = groups.current,
+                                        lambda.lasso = current.lambdas[1], 
+                                        lambda.fused = current.lambdas[2],
+                                        maxiter = fused.maxiter,
+                                        intercept = FALSE,
+                                        tol = fused.tol, beta.init = init[in.idx])
+            
+            if (intercept) {
+              beta[in.idx + 1] <- beta.tmp
+            } else {
+              beta[in.idx] <- beta.tmp
+            }
+            
+            
+            if (intercept) {
+              xwb.tmp <- drop(x %*% beta[-1])
+              beta[1] <- mean( y.working - xwb.tmp)
+              xwb <- xwb.tmp + beta[1]
+            } else {
+              xwb <- drop(x %*% beta)
+            }
+            
+            # update weights
+            p <- 1 / (1 + exp(-xwb))
+            w <- p * (1 - p)
+            
+            y.working <- xwb + (y - p) / w
+            
+            betas[k,] <- beta
+            
+            if (all(abs(beta - prev[k,]) < fused.tol)) {
+              converged[k] <- TRUE
+            }
+            
+          }
+        }
+        if (all(converged)) {
+          #cat("IRLS Converged at iteration: ", i, "\n")
+          break
+        }
+        
+      } # end IRLS loop
+      attr(betas, "tuning.values") <- current.lambdas
+      beta.tmp.list[[l]] <- betas
+      iter.tmp.list[[l]] <- i
+      
+    } # end loop over tuning parameter combinations
+    cat("Group-lasso model", g,  "converged", "\n")
+    beta.list[[g]] <- beta.tmp.list
+    iter.list[[g]] <- iter.tmp.list
+  } # end loop over group-lasso values
+  list(beta = beta.list, lambda = lambda, iters = iter.list)
+}
