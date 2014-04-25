@@ -6,7 +6,7 @@ flsa <- function(x, z,
   infor <- matrix(as.double(rep(0, 4)), ncol=1)
   res <- .C('R_flsa', 
             x = as.matrix(as.double(rep(0, n)), ncol = 1),
-            z = as.matrix(as.double(rep(0, (n-1) )), ncol = 1),
+            z = as.matrix(as.double(rep(0, n-1)), ncol = 1),
             infor=infor,
             as.double(lambda1), as.double(lambda2),
             as.integer(n), as.integer(maxStep),
