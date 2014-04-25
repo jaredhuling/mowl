@@ -294,8 +294,9 @@ fusedLassoMultinomLogisticStage2 <- function(x, y, lambda, lambda.fused = NULL,
               ## to variables with group == NA 
               gr.idx <- which(is.na(groups))
               gr.p <- length(gr.idx)
-              print(gr.p)
-              print(gr.idx)
+              if (gr.p < 1) {
+                next
+              }
               if (any(gr.idx == 1)) {
                 gr.idx.z <- gr.idx[gr.idx != 1] - 1
               } else {
@@ -312,8 +313,9 @@ fusedLassoMultinomLogisticStage2 <- function(x, y, lambda, lambda.fused = NULL,
             for (t in 1:length(unique.groups)) {
               gr.idx <- which(groups == unique.groups[t])
               gr.p <- length(gr.idx)
-              print(gr.p)
-              print(gr.idx)
+              if (gr.p < 1) {
+                next
+              }
               if (any(gr.idx == 1)) {
                 gr.idx.z <- gr.idx[gr.idx != 1] - 1
               } else {
