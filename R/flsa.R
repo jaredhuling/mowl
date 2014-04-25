@@ -14,6 +14,6 @@ flsa <- function(x, z,
             as.integer(flag),
             as.matrix(as.double(x), ncol = 1),
             as.matrix(as.double(z), ncol = 1),
-            PACKAGE = "fusedlasso") 
+            PACKAGE = "mowl") 
   res[1:3]
 }
