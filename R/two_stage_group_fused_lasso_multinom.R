@@ -191,7 +191,7 @@ fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = 
   
   for (g in 1:G) {
     
-    beta.tmp.list <- iter.tmp.list <- vector(mode = "list", length = nlambda)
+    beta.tmp.list <- vector(mode = "list", length = nlambda)
     
     group.list <- nonzero.list <- vector(mode = "list", length = K)
      
@@ -223,7 +223,6 @@ fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = 
       
       attr(betas, "tuning.values") <- current.lambdas
       beta.tmp.list[[l]] <- betas
-      iter.tmp.list[[l]] <- i
       
     } # end loop over tuning parameter combinations
     cat("Group-lasso model", g,  "converged", "\n")
