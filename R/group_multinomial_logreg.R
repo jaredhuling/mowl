@@ -150,6 +150,7 @@ fusedMultinomLogReg <- function(x, y, groups = NULL,
   }
   w <- rep(0.5, nobs)
   betas <- if(is.null(beta.init)) {array(1, dim = c(K, len))} else {beta.init}
+  beta <- betas[1,]
   converged <- rep(FALSE, K)
   for (i in 1:irls.maxiter) {
     prev <- betas
@@ -163,7 +164,7 @@ fusedMultinomLogReg <- function(x, y, groups = NULL,
                                     lambda.lasso = lambda.lasso, 
                                     lambda.fused = lambda.fused,
                                     maxiter = fused.maxiter,
-                                    intercept = intercept,
+                                    intercept = FALSE,
                                     tol = fused.tol, beta.init = init)
         if (intercept) {
           beta[-1] <- beta.tmp
