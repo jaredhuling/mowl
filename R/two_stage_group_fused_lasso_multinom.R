@@ -162,6 +162,9 @@ fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = 
   K <- length(classes)
   G <- length(groups.in)
   
+  # EFLA options
+  opts <- sllOpts()
+  
   if (!is.null(lambda)) {
     stopifnot(length(lambda) == 2)
     lambda <- matrix(lambda, ncol = 2)
