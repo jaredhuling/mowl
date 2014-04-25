@@ -171,7 +171,7 @@ fusedMultinomLogReg <- function(x, y, groups = NULL,
         } else {
           beta <- beta.tmp
         }
-
+        
         if (intercept) {
           xwb.tmp <- drop(x %*% beta[-1])
           beta[1] <- mean( y.working - xwb.tmp)
