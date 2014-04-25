@@ -1,1 +1,3 @@
+useDynLib(mowl)
+
 exportPattern("^[[:alpha:]]+")
