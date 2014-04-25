@@ -151,7 +151,7 @@ groupFusedMultinomLogReg <- function(x, y, weights, groups = NULL,
 }
 
 
-fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = NULL,
+fusedMultinomLogRegSecondold <- function(x, y, weights = rep(1, nrow(x)), groups = NULL,
                                       nlambda = 21,
                                       lambda = NULL,
                                       intercept = TRUE,
@@ -266,4 +266,91 @@ fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = 
   } # end loop over group-lasso values
   list(beta = beta.list, lambda = lambda, iters = iter.list)
 }
+
+
+
+fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = NULL,
+                                      nlambda = 21,
+                                      lambda = NULL,
+                                      intercept = TRUE,
+                                      beta.init = NULL, groups.in = NULL) {
+  
+  y.f <- as.factor(y)
+  y <- as.numeric(levels(y.f)[y.f])
+  classes <- levels(y.f)
+  K <- length(classes)
+  G <- length(groups.in)
+  
+  if (!is.null(lambda)) {
+    stopifnot(length(lambda) == 2)
+    lambda <- matrix(lambda, ncol = 2)
+    colnames(lambda) <- c("lambda.lasso", "lambda.fused")
+    nlambda <- 1
+  } else {
+    # generate a lattice of 21 combinations
+    # of tuning parameters based on a Unif Design
+    lambda <- genLambdaLattice(nlambda)
+  }
+  
+  nobs <- nrow(x)
+  nvars <- ncol(x)
+  len <- if (intercept) {nvars + 1} else {nvars}
+  if (!is.null(beta.init)) {
+    stopifnot(all(dim(beta.init) == c(K, len)))
+  }
+  w <- rep(0.5, nobs)
+  betas <- if(is.null(beta.init)) {array(1, dim = c(K, len))} else {beta.init}
+  beta <- betas[1,]
+  beta.list <- iter.list <- vector(mode = "list", length = G)
+  names(beta.list) <- as.character(1:G)
+  grps <- sort(unique(groups))
+  
+  for (g in 1:G) {
+    
+    beta.tmp.list <- iter.tmp.list <- vector(mode = "list", length = nlambda)
+    
+    group.list <- nonzero.list <- vector(mode = "list", length = K)
+     
+    
+    # set up lists (one element for each class)
+    # to specify which groups to set to zero, as 
+    # determined by group lasso
+    for (k in 1:K) {
+      which.groups <- grps[which(groups.in[[g]][k, ])]
+      in.idx <- which(groups %in% which.groups | is.na(groups))
+      group.list[[k]] <- groups[in.idx]
+      nonzero.list[[k]] <- in.idx
+    }
+
+    
+    for (l in 1:nlambda) {
+      current.lambdas <- lambda[l,]
+      
+      # solve the sparse fused lasso multinomial logistic
+      # regression problem with groups selected by group lasso 
+      res <- fusedLassoMultinomLogisticStage2(x, y, lambda = current.lambdas[1],
+                                              lambda.fused = current.lambdas[2],
+                                              group.list = group.list,
+                                              nonzero.list = nonzero.list,
+                                              opts = opts)
+      betas[,-1] <- res$beta
+      betas[,1] <- res$intercept
+      
+      
+      attr(betas, "tuning.values") <- current.lambdas
+      beta.tmp.list[[l]] <- betas
+      iter.tmp.list[[l]] <- i
+      
+    } # end loop over tuning parameter combinations
+    cat("Group-lasso model", g,  "converged", "\n")
+    beta.list[[g]] <- beta.tmp.list
+    iter.list[[g]] <- iter.tmp.list
+  } # end loop over group-lasso values
+  list(beta = beta.list, lambda = lambda, iters = iter.list)
+}
+
+
+
+
+
 
