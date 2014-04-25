@@ -28,7 +28,8 @@ fusedLassoMultinomLogisticStage2 <- function(x, y, lambda, lambda.fused = NULL,
     
     # if groups are given, get unique groups
     if (!is.null(group.list)) {
-      unique.groups <- sort(unique(group.list[[k]][!is.na(group.list[[k]])]))
+      groups <- group.list[[k]]
+      unique.groups <- sort(unique(groups[!is.na(groups)]))
       x.g <- x[,nonzero.list[[k]]]
       sz <- dim(x.g)
       n <- sz[1]
