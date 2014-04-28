@@ -5,7 +5,8 @@ fusedLassoMultinomLogisticStage2 <- function(x, y, group.list = NULL,
                                       lambda.lasso = 0, lambda.fused = 0,
                                       intercept = TRUE, opts = NULL,
                                       irls.maxiter = 30, irls.tol = 1e-10, 
-                                      beta.init = NULL, groups.in = NULL) {
+                                      beta.init = NULL, groups.in = NULL,
+                                             verbose = FALSE) {
   
   y.f <- as.factor(y)
   classes <- levels(y.f)
@@ -50,7 +51,8 @@ fusedLassoMultinomLogisticStage2 <- function(x, y, group.list = NULL,
         init <- if (intercept) {prev[k,-1]} else {prev[k,]}
         
         beta.tmp <- fusedlasso(x[,nonzero.list[[k]]], 
-                               z[[k]], w[[k]], groups = group.list[[k]],
+                               z[[k]], w[[k]], 
+                               groups = group.list[[k]],
                                lambda.lasso = lambda.lasso, 
                                lambda.fused = lambda.fused, 
                                family = "gaussian")
@@ -88,7 +90,7 @@ fusedLassoMultinomLogisticStage2 <- function(x, y, group.list = NULL,
       cat("IRLS Converged at iteration: ", i, "\n")
       break
     }
-    cat("IRLS iter: ", i, "\n")
+    if (verbose) cat("IRLS iter: ", i, "\n")
   }
   betas
 }
