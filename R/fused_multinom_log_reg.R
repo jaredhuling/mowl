@@ -10,20 +10,19 @@ fusedLassoMultinomLogisticStage2 <- function(x, y, group.list = NULL,
   y.f <- as.factor(y)
   classes <- levels(y.f)
   K <- length(classes)
+  nobs <- nrow(x)
+  nvars <- ncol(x)
   
-  for (k in 1:K) {
-    
-    # if groups are given, get unique groups
-    if (!is.null(group.list)) {
+
+  
+  # if groups are given, get unique groups
+  if (!is.null(group.list)) {
+    for (k in 1:K) {
       groups <- group.list[[k]]
       unique.groups <- sort(unique(groups[!is.na(groups)]))
-      x.g <- x[,nonzero.list[[k]]]
-      sz <- dim(x.g)
-      n <- sz[1]
-      p <- sz[2]
-    } else {
-      x.g <- x
     }
+  } else {
+    group.list <- rep(list(rep(NA, nvars)), K)
   }
   
   nobs <- nrow(x)

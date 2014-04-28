@@ -218,9 +218,9 @@ fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = 
                                               group.list = group.list,
                                               nonzero.list = nonzero.list,
                                               opts = opts)
-      betas[,-1] <- res$beta
-      betas[,1] <- res$intercept
-      
+      #betas[,-1] <- res$beta
+      #betas[,1] <- res$intercept
+      betas <- res
       
       attr(betas, "tuning.values") <- current.lambdas
       beta.tmp.list[[l]] <- betas

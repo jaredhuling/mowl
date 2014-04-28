@@ -25,6 +25,7 @@ fusedLeastR <- function(x, y, lambda, groups = NULL, opts=NULL) {
   # if groups are given, get unique groups
   if (!is.null(groups)) {
     unique.groups <- sort(unique(groups[!is.na(groups)]))
+    print(unique.groups)
   }
   
   ## Set up options
@@ -232,20 +233,22 @@ fusedLeastR <- function(x, y, lambda, groups = NULL, opts=NULL) {
             infor <- res[[3]]
           }
           
-          for (t in 1:length(unique.groups)) {
-            gr.idx <- which(groups == unique.groups[t])
-            gr.p <- length(gr.idx)
-            if (any(gr.idx == 1)) {
-              gr.idx.z <- gr.idx[gr.idx != 1] - 1
-            } else {
-              gr.idx.z <- gr.idx[-gr.p]
+          if (length(unique.groups) > 0) {
+            for (t in 1:length(unique.groups)) {
+              gr.idx <- which(groups == unique.groups[t])
+              gr.p <- length(gr.idx)
+              if (any(gr.idx == 1)) {
+                gr.idx.z <- gr.idx[gr.idx != 1] - 1
+              } else {
+                gr.idx.z <- gr.idx[-gr.p]
+              }
+              
+              res <- flsa(v[gr.idx], z0[gr.idx.z], lambda / L, lambda2 / L, gr.p,
+                          1000, 1e-8, 1, 6)
+              b[gr.idx] <- res[[1]]
+              z0[gr.idx.z] <- res[[2]]
+              infor <- res[[3]]
             }
-            
-            res <- flsa(v[gr.idx], z0[gr.idx.z], lambda / L, lambda2 / L, gr.p,
-                        1000, 1e-8, 1, 6)
-            b[gr.idx] <- res[[1]]
-            z0[gr.idx.z] <- res[[2]]
-            infor <- res[[3]]
           }
         }
         
