@@ -3,7 +3,7 @@
 fusedLassoMultinomLogisticStage2 <- function(x, y, group.list = NULL,
                                       nonzero.list = NULL,
                                       lambda.lasso = 0, lambda.fused = 0,
-                                      intercept = TRUE,
+                                      intercept = TRUE, opts = NULL,
                                       irls.maxiter = 30, irls.tol = 1e-10, 
                                       beta.init = NULL, groups.in = NULL) {
   
