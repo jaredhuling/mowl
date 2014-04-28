@@ -212,7 +212,8 @@ fusedMultinomLogRegSecond <- function(x, y, weights = rep(1, nrow(x)), groups = 
       
       # solve the sparse fused lasso multinomial logistic
       # regression problem with groups selected by group lasso 
-      res <- fusedLassoMultinomLogisticStage2(x, y, lambda = current.lambdas[1],
+      res <- fusedLassoMultinomLogisticStage2(x, y, 
+                                              lambda.lasso = current.lambdas[1],
                                               lambda.fused = current.lambdas[2],
                                               group.list = group.list,
                                               nonzero.list = nonzero.list,
