@@ -82,6 +82,7 @@ fusedLassoMultinomLogisticStage2 <- function(x, y, group.list = NULL,
         # update weights
         p <- 1 / (1 + exp(-xwb))
         w[[k]] <- p * (1 - p)
+        w[[k]][which(w[[k]]) < 1e-5] <- 1e-5
         
         z[[k]] <- xwb + (y.working - p) / w[[k]]
         
