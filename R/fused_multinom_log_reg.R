@@ -51,6 +51,9 @@ fusedLassoMultinomLogisticStage2 <- function(x, y, group.list = NULL,
         init <- if (intercept) {prev[k,-1]} else {prev[k,]}
         
         if (length(nonzero.list[[k]]) > 0) {
+          print("z")
+          print(z[[k]][1:10]); print("w")
+          print(w[[k]][1:10])
           beta.tmp <- fusedlasso(x[,nonzero.list[[k]]], 
                                  z[[k]], w[[k]], 
                                  groups = group.list[[k]],

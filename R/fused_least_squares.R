@@ -25,7 +25,7 @@ fusedLeastR <- function(x, y, lambda, groups = NULL, opts=NULL) {
   # if groups are given, get unique groups
   if (!is.null(groups)) {
     unique.groups <- sort(unique(groups[!is.na(groups)]))
-    print(unique.groups)
+    #print(unique.groups)
   }
   
   ## Set up options
