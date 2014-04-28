@@ -50,19 +50,23 @@ fusedLassoMultinomLogisticStage2 <- function(x, y, group.list = NULL,
         
         init <- if (intercept) {prev[k,-1]} else {prev[k,]}
         
-        beta.tmp <- fusedlasso(x[,nonzero.list[[k]]], 
-                               z[[k]], w[[k]], 
-                               groups = group.list[[k]],
-                               lambda.lasso = lambda.lasso, 
-                               lambda.fused = lambda.fused, 
-                               family = "gaussian")
+        if (length(nonzero.list[[k]]) > 0) {
+          beta.tmp <- fusedlasso(x[,nonzero.list[[k]]], 
+                                 z[[k]], w[[k]], 
+                                 groups = group.list[[k]],
+                                 lambda.lasso = lambda.lasso, 
+                                 lambda.fused = lambda.fused, 
+                                 family = "gaussian")
         
-        if (intercept) {
-          beta[nonzero.list[[k]]+1] <- beta.tmp$beta
+          if (intercept) {
+            beta[nonzero.list[[k]]+1] <- beta.tmp$beta
+          } else {
+            beta[nonzero.list[[k]]] <- beta.tmp$beta
+          }
         } else {
-          beta[nonzero.list[[k]]] <- beta.tmp$beta
+          beta <- rep(0, length(beta))
         }
-        
+            
         if (intercept) {
           xwb.tmp <- drop(x %*% beta[-1])
           #beta[1] <- mean( y.working - xwb.tmp)
