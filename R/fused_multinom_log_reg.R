@@ -51,7 +51,7 @@ fusedLassoMultinomLogisticStage2 <- function(x, y, group.list = NULL,
         init <- if (intercept) {prev[k,-1]} else {prev[k,]}
         
         beta.tmp <- fusedlasso(x[,nonzero.list[[k]]], 
-                               z[[k]], w[[k]], groups = groups,
+                               z[[k]], w[[k]], groups = group.list[[k]],
                                lambda.lasso = lambda.lasso, 
                                lambda.fused = lambda.fused, 
                                family = "gaussian")
