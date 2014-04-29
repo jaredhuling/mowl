@@ -135,24 +135,24 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
   
   
   # if groups are given, get unique groups
-  fused.mat <- 
-    if (!is.null(groups)) {
-      unique.groups <- vector(mode = "list", length = K)
-      if (is.list(groups)) {
-        if (length(groups) != K) {
-          stop("Group list but have one element per class")
-        }
-        
-        for (k in 1:K) {
-          unique.groups[[k]] <- sort(unique(groups[!is.na(groups[[k]])]))
-        }
-      } else {
-        unique.groups[1:K] <- sort(unique(groups[!is.na(groups)]))
-        gr.list <- vector(mode = "list", length = K)
-        gr.list[1:K] <- rep(list(groups), K)
-        groups <- gr.list
+  
+  if (!is.null(groups)) {
+    unique.groups <- vector(mode = "list", length = K)
+    if (is.list(groups)) {
+      if (length(groups) != K) {
+        stop("Group list but have one element per class")
       }
+      
+      for (k in 1:K) {
+        unique.groups[[k]] <- sort(unique(groups[!is.na(groups[[k]])]))
+      }
+    } else {
+      unique.groups[1:K] <- sort(unique(groups[!is.na(groups)]))
+      gr.list <- vector(mode = "list", length = K)
+      gr.list[1:K] <- rep(list(groups), K)
+      groups <- gr.list
     }
+  }
   
   # run sllOpts to set default values (flags)
   opts <- sllOpts(opts.orig)
@@ -369,8 +369,6 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
       
       #aa <- -y.k * (xs + sc)
       aa <- (xs + rep(sc, each = n))
-      print("aa")
-      print(aa[1:10,])
       
       # fun.s is the logistic loss at the search point
       bb <- pmax(- y.mat * aa, 0)
@@ -404,21 +402,12 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
       
       prob <- prob / rSp
       
-      print("prob")
-      print(prob[1:10,])
-      
       #b <- -weighty * (1 - prob)
       b <- -((y.mat+1)/2 - prob) * weight
-      
-      print("b")
-      print(b[1:10,])
       
       #the gradient of c
       #gc <- (colSums(y.mat+1)/(2) - 1) / n
       gc <- colSums(b)
-      
-      print("gc")
-      print(gc)
       
       #  should be sum i=1:n { sum k=1:K {y_i^(k)} - p_ij} 
       
@@ -434,9 +423,6 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
       #add the squared L2 norm regularization term
       g <- g + rsL2 * s
       
-      print("g")
-      print(g)
-      
       #assignments
       betap <- beta
       xbetap <- xbeta
@@ -447,13 +433,6 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
         # and then do the Lq/L1-norm regularized projection
         v <- s - g / L
         c <- sc - gc / L
-        
-        print("g")
-        print(g)
-        print("v")
-        print(v); print("z0")
-        print(z0)
-        
         
         for (k in 1:K) {
           if (is.null(groups)) {
@@ -500,15 +479,9 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
           }
         } #end loop over classes
         
-        print("beta")
-        print(beta[1:15,])
-        
         # the difference between the new approximate 
         # solution x and the search point s
         v <- beta - s
-        
-        print("s")
-        print(s[1:15,])
         
         ## Compute x beta
         if (opts$nFlag == 0) {
@@ -564,11 +537,7 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
         #l.sum <- fun.beta - fun.s - (as.double(sum(diag(crossprod(v, g))))) - sum((c - sc) * gc)
         
         #l.sum <- fun.beta - fun.s; r.sum <- 1e-10
-        #cat("r.sum: ", r.sum, "l.sum: ", l.sum, "fun.beta: ", fun.beta, "fun.s: ", fun.s, " L: ", L)
         
-        
-        
-        cat("r.sum: ", fzp.gamma, "l.sum: ", fun.beta, "fun.s: ", fun.s, " L: ", L)
         
         if (r.sum <= 1e-18) {
           #this shows that the gradient step makes little improvement
@@ -601,8 +570,17 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
       betabetap <- beta - betap
       ccp <- c - cp
       
+      fused.pen <- 0
+      for (t in 1:length(unique.groups[[k]])) {
+        gr.idx <- which(groups[[k]] == unique.groups[[k]][t])
+        gr.p <- length(gr.idx)
+        if (gr.p > 1) {
+          fused.pen <- fused.pen + sum(abs(beta[gr.idx[2:(gr.p)],k] - beta[gr.idx[1:(gr.p - 1)],k]))
+        }
+      }
+      
       funVal[iterStep] <- fun.beta + lambda * sum(abs(beta)) +
-        lambda2 * sum(abs(beta[2:p,] - beta[1:(p-1),]))
+        lambda2 * fused.pen
       
       if (bFlag) {
         break
@@ -663,7 +641,6 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
   
   list(beta = beta, intercept = c, funVal = funVal, ValueL = ValueL, bFlag = bFlag)
 }
-
 
 
 
