@@ -105,7 +105,8 @@ fusedLassoMultinomLogisticStage2 <- function(x, y, group.list = NULL,
 
 
 
-fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL, 
+fusedMultinomialLogistic <- function(x, y, lambda, 
+                                     lambda.group = 0, groups = NULL, 
                                      class.weights = NULL, opts=NULL) {
   
   sz <- dim(x)
@@ -147,7 +148,7 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
         unique.groups[[k]] <- sort(unique(groups[!is.na(groups[[k]])]))
       }
     } else {
-      unique.groups[1:K] <- sort(unique(groups[!is.na(groups)]))
+      unique.groups[1:K] <- rep(list(sort(unique(groups[!is.na(groups)]))), K)
       gr.list <- vector(mode = "list", length = K)
       gr.list[1:K] <- rep(list(groups), K)
       groups <- gr.list
@@ -156,6 +157,9 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
   
   # run sllOpts to set default values (flags)
   opts <- sllOpts(opts.orig)
+  if (lambda.group > 0) {
+    opts$tol <- 1e-10
+  }
   
   ## Set up options
   if (opts$nFlag != 0) {
@@ -380,21 +384,7 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
       #prob <- 1 / (1 + exp(aa))
       prob <- exp(aa)
       
-      #fun.s <- 0
-      #for (i in 1:200) {
-      # #xi <- x[i,]
-      #lsum <- 0
-      #for (j in 1:5) {
-      #  xib <- aa[i,j]
-      #  fun.s <- fun.s + (y.mat[i,j] + 1) * xib / 2
-      #  lsum <- lsum + exp(xib)
-      # }
-      #  fun.s <- fun.s - log(lsum)
-      #}
-      #fun.s <- -fun.s / n# + sum(bb) / n
       
-      #fun.s <- -sum(rowSums(((y.mat + 1) / 2) * aa * weight) - log( rowSums(prob) ) / n) + 
-      #  ( rsL2 / 2 ) * sum(as.double(crossprod(s)))
       rSp <- rowSums(prob)
       
       fun.s <- -sum(rowSums(((y.mat + 1) / 2) * aa) - log( rSp )) / n + 
@@ -437,7 +427,7 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
         for (k in 1:K) {
           if (is.null(groups)) {
             res <- flsa(v[, k], z0[, k], lambda / L, lambda2 / L, p,
-                        1000, 1e-8, 1, 6)
+                        1000, 1e-9, 1, 6)
             beta[, k] <- res[[1]]
             z0[, k] <- res[[2]]
             infor <- res[[3]]
@@ -455,7 +445,8 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
               }
               
               res <- flsa(v[gr.idx, k], z0[gr.idx.z, k], lambda / L, 0, gr.p,
-                          1000, 1e-8, 1, 6)
+                          1000, 1e-9, 1, 6)            
+              
               beta[gr.idx, k] <- res[[1]]
               z0[gr.idx.z, k] <- res[[2]]
               infor <- res[[3]]
@@ -471,8 +462,27 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
               }
               
               res <- flsa(v[gr.idx, k], z0[gr.idx.z, k], lambda / L, lambda2 / L, gr.p,
-                          1000, 1e-8, 1, 6)
-              beta[gr.idx, k] <- res[[1]]
+                          1000, 1e-9, 1, 6)
+              
+              if (lambda.group > 0) {
+                ## 2nd Projection:
+                ## argmin_w { 0.5 \|w - w_1\|_2^2
+                ##          + lambda_3 * \|w_1\|_2 }
+                ## This is a simple thresholding:
+                ##    w_2 = max(\|w_1\|_2 - \lambda_3, 0)/\|w_1\|_2 * w_1
+                nm = norm(res[[1]], type = "2")
+                if (nm == 0) {
+                  newbeta = numeric(length(res[[1]]))
+                } else {
+                  #apply soft thresholding, adjust penalty for size of group
+                  newbeta = pmax(nm - lambda.group * sqrt(gr.p), 0) / nm * res[[1]]
+                }
+                end
+              } else {
+                newbeta <- res[[1]]
+              }
+              
+              beta[gr.idx, k] <- newbeta
               z0[gr.idx.z, k] <- res[[2]]
               infor <- res[[3]]
             }
@@ -499,44 +509,16 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
         aa <- (xbeta + rep(c, each = n))
         
         # fun.beta is the logistic loss at the new approximate solution
-        #bb <- pmax(aa, 0)
         bb <- pmax(- y.mat * aa, 0)
-        #fun.beta <- as.double( crossprod(weight, (log(exp(-bb) + exp(aa - bb)) + bb)) ) + 
-        #  ( rsL2 / 2 ) * as.double(crossprod(beta))
         
-        #fun.beta <- -sum(rowSums(((y.mat + 1) / 2) * aa * weight) - log( rowSums(exp(aa)) ) / n) + 
-        #  ( rsL2 / 2 ) * sum(as.double(crossprod(beta)))
-        
-        #fun.beta <- 0
-        #for (i in 1:200) {
-        #  #xi <- x[i,]
-        #  lsum <- 0
-        #  for (j in 1:5) {
-        #    xib <- aa[i,j]
-        #    fun.beta <- fun.beta + (y.mat[i,j] + 1) * xib / 2
-        #    lsum <- lsum + exp(xib)
-        #  }
-        #  fun.beta <- fun.beta - log(lsum)
-        #}
-        #fun.beta <- -fun.beta / n # + sum(bb) / n
-        #if (fun.beta > 1e10) {fun.beta <- 1e10}
         
         fun.beta <- -sum(rowSums(((y.mat + 1) / 2) * aa) - log( rowSums(exp(aa)) )) / n + 
           ( rsL2 / 2 ) * sum(as.double(crossprod(beta)))
         
-        #r.sum <- (as.double(crossprod(v)) + (c - sc)^2) / 2
-        #l.sum <- fun.beta - fun.s - as.double(crossprod(v, g)) - (c - sc) * gc
-        #r.sum <- (as.double(crossprod(as.vector(v))) + sum((c - sc)^2)) / 2
-        #l.sum <- fun.beta - fun.s - sum(as.double(crossprod(as.vector(v), as.vector(g)))) - sum((c - sc) * gc)
         
         
-        r.sum <- norm(v, type = "F") ^ 2 + sum((c - sc)^2) / 2
-        #fzp.gamma <- fun.s + sum(sum(v * g)) + (L / 2) * r.sum + sum((c - sc) * gc) + L * sum((c - sc)^2) / 2
+        r.sum <- norm(v, type = "F") ^ 2 / 2 + sum((c - sc)^2) / 2
         fzp.gamma <- fun.s + sum(sum(v * g)) + L * r.sum + sum((c - sc) * gc)
-        #r.sum <- (as.double(sum(diag(crossprod(v)))) + sum((c - sc)^2)) / 2
-        #l.sum <- fun.beta - fun.s - (as.double(sum(diag(crossprod(v, g))))) - sum((c - sc) * gc)
-        
-        #l.sum <- fun.beta - fun.s; r.sum <- 1e-10
         
         
         if (r.sum <= 1e-18) {
@@ -548,14 +530,14 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
         ## the condition is fun.beta <= fun.s + v'* g + c * gc
         ##                           + L/2 * (v'*v + (c-sc)^2 )
         
-        if (fun.beta <= fzp.gamma) { # | fun.s - fun.beta < diff.prev
+        if (fun.beta <= fzp.gamma ) { #| funval.s - funval < diff.prev
           break
         } else {
           #L <- max(2 * L, (fun.beta * L) / fzp.gamma)
           L <- 2 * L
         }
         
-        diff.prev <- fun.s - fun.beta
+        #diff.prev <- funval.s - funval
         
       } # end while loop
       
@@ -570,17 +552,27 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
       betabetap <- beta - betap
       ccp <- c - cp
       
-      fused.pen <- 0
-      for (t in 1:length(unique.groups[[k]])) {
-        gr.idx <- which(groups[[k]] == unique.groups[[k]][t])
-        gr.p <- length(gr.idx)
-        if (gr.p > 1) {
-          fused.pen <- fused.pen + sum(abs(beta[gr.idx[2:(gr.p)],k] - beta[gr.idx[1:(gr.p - 1)],k]))
+      
+      # evaluate fused and group lasso 
+      # penalty-terms
+      if (!is.null(groups)) {
+        fused.pen <- group.pen <- 0
+        for (k in 1:K) {
+          for (t in 1:length(unique.groups[[k]])) {
+            gr.idx <- which(groups[[k]] == unique.groups[[k]][t])
+            gr.p <- length(gr.idx)
+            if (gr.p > 1) {
+              fused.pen <- fused.pen + sum(abs(beta[gr.idx[2:(gr.p)], k] - beta[gr.idx[1:(gr.p - 1)], k]))
+              group.pen <- group.pen + sqrt(sum(beta[gr.idx, k] ^ 2) * gr.p)
+            }
+          }
         }
+        pens <- lambda2 * fused.pen + lambda.group * group.pen
+      } else {
+        pens <- lambda2 * sum(abs(beta[2:p] - beta[1:(p-1)]))
       }
       
-      funVal[iterStep] <- fun.beta + lambda * sum(abs(beta)) +
-        lambda2 * fused.pen
+      funVal[iterStep] <- fun.beta + lambda * sum(abs(beta)) + pens
       
       if (bFlag) {
         break
@@ -639,9 +631,8 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
   }
   
   
-  list(beta = beta, intercept = c, funVal = funVal, ValueL = ValueL, bFlag = bFlag)
+  list(beta = t(beta), intercept = c, funVal = funVal, ValueL = ValueL, bFlag = bFlag)
 }
-
 
 
 
