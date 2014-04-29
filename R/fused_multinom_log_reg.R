@@ -672,9 +672,9 @@ fusedMultinomialLogistic <- function(x, y, lambda, groups = NULL,
 
 
 fusedLassoMultinomLogisticStage2_false <- function(x, y, lambda, lambda.fused = NULL,
-                                             group.list = NULL, 
-                                             nonzero.list = NULL,
-                                             class.weights = NULL, opts=NULL) {
+                                                   group.list = NULL, 
+                                                   nonzero.list = NULL,
+                                                   class.weights = NULL, opts=NULL) {
   
   sz <- dim(x)
   n <- sz[1]
@@ -749,7 +749,7 @@ fusedLassoMultinomLogisticStage2_false <- function(x, y, lambda, lambda.fused = 
       
     }
     
-
+    
     
     #code current y as 1 and -1
     y.k <- 2 * (y.f == classes[k]) - 1
@@ -993,7 +993,7 @@ fusedLassoMultinomLogisticStage2_false <- function(x, y, lambda, lambda.fused = 
               } else {
                 gr.idx.z <- gr.idx[-gr.p]
               }
-            
+              
               res <- flsa(v[gr.idx], z0[gr.idx.z], lambda / L, lambda2 / L, gr.p,
                           1000, 1e-8, 1, 6)
               beta[gr.idx] <- res[[1]]
