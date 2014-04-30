@@ -384,7 +384,7 @@ fusedMultinomialLogistic <- function(x, y, lambda, lambda.fused = 0,
       
       rSp <- rowSums(prob)
       
-      fun.s <- -sum(we(rowSums(((y.mat + 1) / 2) * aa) - log( rSp ))) / n + 
+      fun.s <- -sum(weights * (rowSums(((y.mat + 1) / 2) * aa) - log( rSp ))) / n + 
         ( rsL2 / 2 ) * sum(as.double(crossprod(s)))
       
       prob <- prob / rSp
@@ -509,7 +509,7 @@ fusedMultinomialLogistic <- function(x, y, lambda, lambda.fused = 0,
         bb <- pmax(- y.mat * aa, 0)
         
         
-        fun.beta <- -sum(weights * rowSums(((y.mat + 1) / 2) * aa) - log( rowSums(exp(aa)) ))) / n + 
+        fun.beta <- -sum(weights * (rowSums(((y.mat + 1) / 2) * aa) - log( rowSums(exp(aa)) ))) / n + 
           ( rsL2 / 2 ) * sum(as.double(crossprod(beta)))
         
         
