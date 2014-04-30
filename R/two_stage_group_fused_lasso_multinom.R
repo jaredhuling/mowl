@@ -127,7 +127,7 @@ groupFusedMultinomLogistic <- function(x, y, weights, groups = NULL,
   }
   betas <- if(is.null(beta.init)) {array(1, dim = c(K, len))} else {beta.init}
   beta <- betas[1,]
-  beta.list <- vector(mode = "list", length = nlambda)
+  beta.list <- funVal.list <- vector(mode = "list", length = nlambda)
   
   for (l in 1:nlambda) {
     current.lambdas <- lambda[l,]
@@ -145,12 +145,13 @@ groupFusedMultinomLogistic <- function(x, y, weights, groups = NULL,
     
     attr(betas, "tuning.values") <- current.lambdas
     beta.list[[l]] <- betas
+    funVal.list[[l]] <- res$funVal
     
   } # end loop over tuning parameter combinations
   
   
   structure(list(coefficients = beta.list, lambda = lambda,
-                 classes = classes), 
+                 classes = classes, funVal = funVal.list), 
             class = "groupSparseFusedFit")
 }
 
