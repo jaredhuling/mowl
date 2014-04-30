@@ -144,7 +144,7 @@ groupFusedMultinomLogistic <- function(x, y, weights, groups = NULL,
     #betas <- res
     
     #initialize next one with current estimates
-    opts$x0 <- res$beta
+    opts$x0 <- t(res$beta)
     opts$c0 <- res$intercept
     
     attr(betas, "tuning.values") <- current.lambdas
