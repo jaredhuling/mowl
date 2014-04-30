@@ -113,7 +113,7 @@ groupFusedMultinomLogistic <- function(x, y, weights, groups = NULL,
   } else {
     # generate a lattice of 21 combinations
     # of tuning parameters based on a Unif Design
-    lambda <- genLambdaLattice(nlambda / sqrt(length(y)), dim = 3)
+    lambda <- genLambdaLattice(nlambda, dim = 3) / sqrt(length(y)
     nlambda <- nrow(lambda)
   }
 
