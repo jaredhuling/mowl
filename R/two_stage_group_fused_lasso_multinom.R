@@ -134,7 +134,7 @@ groupFusedMultinomLogistic <- function(x, y, weights, groups = NULL,
     
     # solve the sparse group fused lasso multinomial logistic
     # regression problem 
-    res <- fusedMultinomialLogistic(x, y, groups = groups,
+    res <- fusedMultinomialLogistic(x, y, groups = groups, weights = weights,
                                     lambda = current.lambdas[1],
                                     lambda.fused = current.lambdas[2],
                                     lambda.group = current.lambdas[3],

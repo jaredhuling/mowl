@@ -106,7 +106,8 @@ fusedLassoMultinomLogisticStage2 <- function(x, y, group.list = NULL,
 
 
 fusedMultinomialLogistic <- function(x, y, lambda, lambda.fused = 0,
-                                     lambda.group = 0, groups = NULL, 
+                                     lambda.group = 0, weights = rep(1, nrows(x)), 
+                                     groups = NULL, 
                                      class.weights = NULL, opts=NULL) {
   
   sz <- dim(x)
@@ -383,13 +384,13 @@ fusedMultinomialLogistic <- function(x, y, lambda, lambda.fused = 0,
       
       rSp <- rowSums(prob)
       
-      fun.s <- -sum(rowSums(((y.mat + 1) / 2) * aa) - log( rSp )) / n + 
+      fun.s <- -sum(we(rowSums(((y.mat + 1) / 2) * aa) - log( rSp ))) / n + 
         ( rsL2 / 2 ) * sum(as.double(crossprod(s)))
       
       prob <- prob / rSp
       
       #b <- -weighty * (1 - prob)
-      b <- -((y.mat+1)/2 - prob) * weight
+      b <- -((y.mat+1)/2 - prob) * weight * weights
       
       #the gradient of c
       #gc <- (colSums(y.mat+1)/(2) - 1) / n
@@ -508,7 +509,7 @@ fusedMultinomialLogistic <- function(x, y, lambda, lambda.fused = 0,
         bb <- pmax(- y.mat * aa, 0)
         
         
-        fun.beta <- -sum(rowSums(((y.mat + 1) / 2) * aa) - log( rowSums(exp(aa)) )) / n + 
+        fun.beta <- -sum(weights * rowSums(((y.mat + 1) / 2) * aa) - log( rowSums(exp(aa)) ))) / n + 
           ( rsL2 / 2 ) * sum(as.double(crossprod(beta)))
         
         
