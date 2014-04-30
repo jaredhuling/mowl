@@ -146,7 +146,7 @@ groupFusedMultinomLogistic <- function(x, y, weights, groups = NULL,
     attr(betas, "tuning.values") <- current.lambdas
     beta.list[[l]] <- betas
     funVal.list[[l]] <- res$funVal
-    
+    cat(l)
   } # end loop over tuning parameter combinations
   
   
