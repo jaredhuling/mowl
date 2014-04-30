@@ -28,10 +28,42 @@ thresholdModel <- function(obj, threshold = 0) {
   owl.obj
 }
 
-predict.groupSparseFusedFit <- function(obj, newx, group.idx, lambda.idx = NULL, type = c("class", "response")) {
+predict.groupSparseFusedFit2Stage <- function(obj, newx, group.idx, lambda.idx = NULL, type = c("class", "response")) {
   
   type <- match.arg(type)
   coefs <- obj$coefficients[[group.idx]]
+  nlam <- nrow(obj$lambda)
+  classes <- obj$classes
+  n <- nrow(newx)
+  
+  if (is.null(lambda.idx)) {
+    ret <- array(NA, dim = c(n, nlam))
+    for (i in 1:nlam) {
+      coefs.nb <- coefs[[i]][,-1]
+      int <- coefs[[i]][,1]
+      prob.num <- exp(newx %*% t(coefs.nb) + int)
+      prob <- prob.num / rowSums(prob.num)
+      class <- apply(prob, 1, function(x) classes[which.max(x)])
+      ret[, i] <- class
+    }
+  } else {
+    coefs.nb <- coefs[[lambda.idx]][,-1]
+    int <- coefs[[lambda.idx]][,1]
+    prob.num <- exp(newx %*% t(coefs.nb) + int)
+    prob <- prob.num / rowSums(prob.num)
+    class <- apply(prob, 1, function(x) classes[which.max(x)])
+    ret <- switch(type,
+                  class = class,
+                  response = prob)
+  }
+  ret
+}
+
+
+predict.groupSparseFusedFit <- function(obj, newx, lambda.idx = NULL, type = c("class", "response")) {
+  
+  type <- match.arg(type)
+  coefs <- obj$coefficients
   nlam <- nrow(obj$lambda)
   classes <- obj$classes
   n <- nrow(newx)
@@ -70,7 +102,7 @@ predict.owlfit <- function(object, type.measure = c("class", "value", "aic", "de
     predict(object$model, ...)$classes[,which(object$model$lambda == lam)]
   } else if (inherits(object$model, "msgl")){
     predict(object$model, s = lam, ...)
-  } else if (inherits(object$model, "groupSparseFusedFit")) {
+  } else if (inherits(object$model, "groupSparseFusedFit2Stage")) {
     
   }
 }

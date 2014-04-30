@@ -91,8 +91,73 @@ groupMultinomLogReg <- function(x, y, weights = rep(1, nrow(x)), groups = NULL,
 }
 
 
+groupFusedMultinomLogistic <- function(x, y, weights, groups = NULL,
+                                           lambda = NULL, 
+                                           nlambda = 21,
+                                           intercept = TRUE,
+                                           beta.init = NULL) {
+  
+  y.f <- as.factor(y)
+  y <- as.numeric(levels(y.f)[y.f])
+  classes <- levels(y.f)
+  K <- length(classes)
+  
+  # EFLA options
+  opts <- sllOpts()
+  
+  if (!is.null(lambda)) {
+    stopifnot(length(lambda) == 3)
+    lambda <- matrix(lambda, ncol = 3)
+    colnames(lambda) <- c("lambda.lasso", "lambda.fused", "lambda.group")
+    nlambda <- 1
+  } else {
+    # generate a lattice of 21 combinations
+    # of tuning parameters based on a Unif Design
+    lambda <- genLambdaLattice(nlambda) / sqrt(length(y), dim = 3)
+    nlambda <- nrow(lambda)
+  }
 
-groupFusedMultinomLogReg <- function(x, y, weights, groups = NULL,
+  
+  
+  nobs <- nrow(x)
+  nvars <- ncol(x)
+  len <- if (intercept) {nvars + 1} else {nvars}
+  if (!is.null(beta.init)) {
+    stopifnot(all(dim(beta.init) == c(K, len)))
+  }
+  betas <- if(is.null(beta.init)) {array(1, dim = c(K, len))} else {beta.init}
+  beta <- betas[1,]
+  beta.list <- vector(mode = "list", length = nlambda)
+  
+  for (l in 1:nlambda) {
+    current.lambdas <- lambda[l,]
+    
+    # solve the sparse group fused lasso multinomial logistic
+    # regression problem 
+    res <- fusedMultinomialLogistic(x, y, groups = groups,
+                                    lambda = current.lambdas[1],
+                                    lambda.fused = current.lambdas[2],
+                                    lambda.group = current.lambdas[3],
+                                    opts = opts)
+    betas[,-1] <- res$beta
+    betas[,1] <- res$intercept
+    #betas <- res
+    
+    attr(betas, "tuning.values") <- current.lambdas
+    beta.list[[l]] <- betas
+    
+  } # end loop over tuning parameter combinations
+  
+  
+  structure(list(coefficients = beta.list, lambda = lambda,
+                 classes = classes), 
+            class = "groupSparseFusedFit")
+}
+
+
+
+
+groupFusedMultinomLogReg2Stage <- function(x, y, weights, groups = NULL,
                                      lambda = NULL, nlambda.group = 50,
                                      nlambda.fused = 21,
                                      intercept = TRUE,
@@ -145,7 +210,7 @@ groupFusedMultinomLogReg <- function(x, y, weights, groups = NULL,
   
   structure(list(coefficients = fused.fit$beta, lambda = fused.fit$lambda,
                  classes = classes, fused.iters = fused.fit$iters, groups.in = groups.in), 
-              class = "groupSparseFusedFit")
+              class = "groupSparseFusedFit2Stage")
 }
 
 

@@ -142,8 +142,10 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
 
 computeD <- function(obj, newx, outcome, actual.treatments, group.idx = NULL) {
   
-  nlams <- if(inherits(obj, "groupSparseFusedFit")) {
+  nlams <- if(inherits(obj, "groupSparseFusedFit2Stage")) {
     length(obj$coefficients[[1]])
+  } else if (inherits(obj, "groupSparseFusedFit")) {
+    nrow(obj$lambda)
   } else {
     length(obj$lambda)
   }
@@ -159,7 +161,8 @@ computeD <- function(obj, newx, outcome, actual.treatments, group.idx = NULL) {
     obj$beta[[1]]@Dim[1]
   } else if (inherits(obj, "glmnet")){ 
     length(obj$beta)
-  } else if (inherits(obj, "groupSparseFusedFit")) {
+  } else if (inherits(obj, "groupSparseFusedFit2Stage") | 
+               inherits(obj, "groupSparseFusedFit")) {
     length(obj$classes)
   }
   ret <- array(0, dim = c(K, nlams))
@@ -170,8 +173,10 @@ computeD <- function(obj, newx, outcome, actual.treatments, group.idx = NULL) {
     dimnames(predicted.treatments) <- NULL
   } else if (inherits(obj, "glmnet")){
     predicted.treatments <- predict(obj, newx = newx, s = obj$lambda, type = "class")
-  } else if (inherits(obj, "groupSparseFusedFit")) {
+  } else if (inherits(obj, "groupSparseFusedFit2Stage")) {
     predicted.treatments <- predict(obj, newx = newx, group.idx = group.idx, type = "class")
+  } else if (inherits(obj, "groupSparseFusedFit")) {
+    predicted.treatments <- predict(obj, newx = newx, type = "class")
   }
   
   for (i in 1:K) {
@@ -192,7 +197,8 @@ computeDfromPreds <- function(preds, outcome, actual.treatments) {
   if (is.factor(outcome)) {
     outcome <- levels(outcome)[outcome]
   }
-  K <- if (inherits(obj, "msgl")){obj$beta[[1]]@Dim[1]} else {length(obj$beta)}
+  tr.factor <- as.factor(actual.treatments)
+  K <- length(levels(tr.factor))
 
   ret <- numeric(length = K)
   names(ret) <- paste("d", 1:K, sep="")

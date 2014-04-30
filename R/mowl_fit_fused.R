@@ -1,6 +1,119 @@
 
-
 mowl.fit.fused <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, 
+                           seed = 123, oracle = NULL, verbose = FALSE, ...) {
+  
+  thiscall <- match.call()
+  
+  nvars <- ncol(x)
+  nobs <- nrow(x)
+  K <- length(unique(A))
+  weights <- y * K
+  
+  
+  if (is.null(groups)) {
+    stop("You must specify the groups for group, fused lasso")
+  }
+  model <- groupFusedMultinomLogistic(x, A, groups = groups, weights = weights, ...)
+  nlams <- nrow(model$lambda)
+  
+  
+  if (!is.null(oracle)) {
+    #pct.correct <- array(NA, dim = c(ngr, nlams))
+    preds <- predict(model, newx = x, type = "class")
+    
+    pct.correct <- apply(preds, 2, function(x) mean(x == oracle))
+    attr(pct.correct, "names") <- NULL
+  }
+  
+  #if (is.null(groups)) {
+  #  aic.fit <- aic(model, y, A, weights)
+  #} else {
+  #  aic.fit <- aic.msgl(model)
+  #}
+  #aic.ind <- which.min(aic.fit)
+  
+  require(dismo)
+  set.seed(seed)
+  folds <- kfold(y, k = nfolds, by = A)
+  misclass <- values <- array(0, dim = c(nfolds, nlams))
+  d.vals.cv <- array(0, dim = c(nfolds, nlams, K))
+  
+  for (f in 1:nfolds) {
+    x.train <- x[folds != f,]
+    A.train <- A[folds != f]
+    w.train <- weights[folds != f]
+    x.test <- x[folds == f,]
+    A.test <- A[folds == f]
+    y.test <- y[folds == f]
+    w.test <- weights[folds == f]
+    oracle.test <- oracle[folds == f]
+    
+    
+    fit.fold <- groupFusedMultinomLogistic(x.train, A.train, groups = groups, 
+                                           weights = w.train, ...)
+    
+
+    preds <- predict(fit.fold, newx = x.test, type = "class")
+    for (i in 1:nlams) { #loop through combinations of lasso / fused lasso params
+      
+      preds.i <- drop(preds[,i])
+      values[f, i] <- value.func(A.test, preds.i, y.test)
+      misclass[f, i] <- weighted.mean(preds.i != A.test, w.test) #mean(preds != oracle.test)
+      d.vals.cv[f, i, ] <- computeDfromPreds(preds.i, y.test, A.test)
+    }
+
+    
+    if (verbose) cat("Fold = ", f, "\n")
+  }
+  
+  if (!is.null(oracle)) {
+    optimal.ind <- which.max(pct.correct)
+  }
+  class.ind <- which.min(colMeans(misclass))
+  value.ind <- which.max(colMeans(values))
+  
+  
+  d.vals <- computeD(model, x, y, A)
+  optimal.ind.d <- which.max(colSums(d.vals))
+  
+  d.optimal <- d.vals[, optimal.ind.d]
+  d.value <- d.vals[, value.ind]
+  d.class <- d.vals[, class.ind]
+  #d.aic <- d.vals[, aic.ind]
+  
+
+  
+  ret <- list(model = model,
+              call = thiscall,
+              lambda = model$lambda,
+              optimal.lambda = if(!is.null(oracle)) {model$lambda[optimal.ind]} else {NULL},
+              optimal.d.lambda = model$lambda[optimal.ind.d,],
+              class.lambda = model$lambda[class.ind,],
+              value.lambda = model$lambda[value.ind,],
+              #aic.lambda = model$lambda[aic.ind],
+              max.pct.correct = if(!is.null(oracle)) {max(pct.correct)} else {NULL},
+              class.pct.correct = if(!is.null(oracle)) {pct.correct[class.ind]} else {NULL},
+              value.pct.correct = if(!is.null(oracle)) {pct.correct[value.ind]} else {NULL},
+              #aic.pct.correct = if(!is.null(oracle)) {pct.correct[aic.ind]} else {NULL},
+              d.optimal = d.optimal,
+              d.class = d.class,
+              d.value = d.value,
+              #d.aic = d.aic,
+              values = values,
+              misclass = misclass,
+              d.vals = d.vals,
+              d.vals.cv = d.vals.cv,
+              optimal.lambda.idx = optimal.ind.d,
+              class.lambda.idx = class.ind,
+              value.lambda.idx = value.ind)
+  #aic.lambda.idx = aic.ind)
+  class(ret) <- c("owlfit", "owlfit.fused")
+  ret
+}
+
+
+
+mowl.fit.fused.2stage <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, 
                            seed = 123, oracle = NULL, verbose = FALSE, ...) {
   
   thiscall <- match.call()

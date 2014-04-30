@@ -105,7 +105,7 @@ fusedLassoMultinomLogisticStage2 <- function(x, y, group.list = NULL,
 
 
 
-fusedMultinomialLogistic <- function(x, y, lambda, 
+fusedMultinomialLogistic <- function(x, y, lambda, lambda.fused = 0,
                                      lambda.group = 0, groups = NULL, 
                                      class.weights = NULL, opts=NULL) {
   
@@ -269,17 +269,13 @@ fusedMultinomialLogistic <- function(x, y, lambda,
     if (is.null(opts$fusedPenalty)) {
       lambda2 <- 0
     } else {
-      lambda2 <- lambda.max * opts$fusedPenalty
+      lambda2 <- lambda.max * lambda.fused
     }
     
     rsL2 <- rsL2 * lambda.max
     
   } else {
-    if (is.null(opts$fusedPenalty)) {
-      lambda2 <- 0
-    } else {
-      lambda2 <- opts$fusedPenalty
-    }
+    lambda2 <- lambda.fused
   }
   
   ## initialize a starting point
