@@ -514,7 +514,6 @@ fusedMultinomialLogistic <- function(x, y, lambda, lambda.fused = 0,
           ( rsL2 / 2 ) * sum(as.double(crossprod(beta)))
         #in case of super bad likelihood, just make it reasonably big
         if (is.nan(fun.beta) | fun.beta == Inf) {fun.beta <- 1e10}  
-        cat(fun.beta, "\n")
         
         r.sum <- norm(v, type = "F") ^ 2 / 2 + sum((c - sc)^2) / 2
         fzp.gamma <- fun.s + sum(sum(v * g)) + L * r.sum + sum((c - sc) * gc)
