@@ -106,7 +106,8 @@ fusedLassoMultinomLogisticStage2 <- function(x, y, group.list = NULL,
 
 
 fusedMultinomialLogistic <- function(x, y, lambda, lambda.fused = 0,
-                                     lambda.group = 0, weights = rep(1, nrows(x)), 
+                                     lambda.group = 0, 
+                                     weights = rep(1, nrows(x)), 
                                      groups = NULL, 
                                      class.weights = NULL, opts=NULL) {
   
@@ -251,7 +252,7 @@ fusedMultinomialLogistic <- function(x, y, lambda, lambda.fused = 0,
     b <- array(0, dim = c(n, K))
     b[which(p.flag)] <- m2
     b[which(!p.flag)] <- -m1
-    b <- b * weight
+    b <- b * weight * weights
     #b <- b / n
     
     ## compute xTb
@@ -517,7 +518,7 @@ fusedMultinomialLogistic <- function(x, y, lambda, lambda.fused = 0,
         r.sum <- norm(v, type = "F") ^ 2 / 2 + sum((c - sc)^2) / 2
         fzp.gamma <- fun.s + sum(sum(v * g)) + L * r.sum + sum((c - sc) * gc)
         
-        
+        cat(fun.beta, fun.s, fzp.gamma)
         if (r.sum <= 1e-18) {
           #this shows that the gradient step makes little improvement
           bFlag <- 1
