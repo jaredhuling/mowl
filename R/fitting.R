@@ -221,26 +221,29 @@ computeDpctCorrect <- function(obj, newx, outcome, actual.treatments, oracle) {
     outcome <- levels(outcome)[outcome]
   }
   #K <- if (inherits(obj, "msgl")){obj$beta[[1]]@Dim[1]} else {length(obj$beta)}
-  a.factor <- as.factor(actual.treatments)
-  K <- length(levels(a.factor))
-  ret <- array(0, dim = c(K, length(obj$lambda)))
-  rownames(ret) <- paste("d", 1:K, sep="")
+
   if (inherits(obj, "msgl")) {
     predicted.treatments <- predict(obj, x = newx)$classes
     dimnames(predicted.treatments) <- NULL
-  }  else if (inherits(obj, "groupSparseFusedFit2Stage")) {
-    predicted.treatments <- predict(obj, newx = newx, group.idx = group.idx, type = "class")
+    nlams <- length(obj$lambda)
   } else if (inherits(obj, "groupSparseFusedFit")) {
     predicted.treatments <- predict(obj, newx = newx, type = "class")
+    nlams <- nrow(obj$lambda)
   } else {
     predicted.treatments <- predict(obj, newx = newx, s = obj$lambda, type = "class")
+    nlams <- length(obj$lambda)
   }
+  
+  a.factor <- as.factor(actual.treatments)
+  K <- length(levels(a.factor))
+  ret <- array(0, dim = c(K, nlams))
+  rownames(ret) <- paste("d", 1:K, sep="")
   
   pct.correct <- apply(predicted.treatments, 2, function(x) mean(x == oracle))
   
   for (i in 1:K) {
     agree.ind <- apply(predicted.treatments, 2, function(x) which(x == actual.treatments & x == t.vals[i]))
-    for (l in 1:length(obj$lambda)) {
+    for (l in 1:nlams) {
       ret[i, l] <- mean(outcome[agree.ind[[l]]]) - mean(outcome[-agree.ind[[l]]])
     }
   }
