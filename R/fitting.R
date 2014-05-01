@@ -1,6 +1,6 @@
 
 mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, 
-                     seed = 123, oracle = NULL, verbose = FALSE, fused = FALSE,
+                     seed = 123, oracle = NULL, verbose = FALSE, fused = FALSE, lambda = NULL,
                      alpha = if(is.null(groups)) {1} else {0.5}, threshold = 0, ...) {
   
   thiscall <- match.call()
@@ -12,7 +12,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
   
 
   if (is.null(groups)) {
-    model <- glmnet(x, A, family = "multinomial", weights = weights, alpha = alpha, ...)
+    model <- glmnet(x, A, family = "multinomial", weights = weights, alpha = alpha, lambda = lambda, ...)
   } else {
     config <- msgl.algorithm.config(verbose = FALSE)
     GG <- unique(groups)
