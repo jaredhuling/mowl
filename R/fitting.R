@@ -56,6 +56,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
   set.seed(seed)
   folds <- kfold(y, k = nfolds, by = A)
   misclass <- values <- array(0, dim = c(nfolds, length(model$lambda)))
+  d.vals.cv <- array(0, dim = c(nfolds, length(model$lambda), K))
   
   for (f in 1:nfolds) {
     x.train <- x[folds != f,]
@@ -90,10 +91,12 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
         preds <- predict(fit.fold, newx = x.test, type = "class", s = fit.fold$lambda[i])
         values[f, i] <- value.func(A.test, preds, y.test)
         misclass[f, i] <- weighted.mean(preds != A.test, w.test) #mean(preds != oracle.test)
+        d.vals.cv[f, i, ] <- computeDfromPreds(preds, y.test, A.test)
       } else {
         preds.i <- drop(preds[,i])
         values[f, i] <- value.func(A.test, preds.i, y.test)
         misclass[f, i] <- weighted.mean(preds.i != A.test, w.test) #mean(preds != oracle.test)
+        d.vals.cv[f, i, ] <- computeDfromPreds(preds.i, y.test, A.test)
       }
     }
     if (verbose) cat("Fold = ", f, "\n")
