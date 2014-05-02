@@ -149,7 +149,7 @@ print.owlfit <- function(obj, xtable = FALSE,  ...) {
 }
 
 
-plot.owlfit <- function(x, log.scale = FALSE) {
+plot.owlfit <- function(x, log.scale = FALSE, cv.vals = FALSE) {
   #K <- nrow(obj$d.vals)
   #nonan <- obj$d.vals; nonan[is.nan(nonan)] <- mean(nonan[!is.nan(nonan)])
   #ylims <- c(min(na.omit(obj$d.vals))-0.25 * sd(nonan[!is.nan(nonan)]), max(na.omit(obj$d.vals)+0.25 * sd(nonan[!is.nan(nonan)])))
@@ -165,8 +165,15 @@ plot.owlfit <- function(x, log.scale = FALSE) {
   n.trt <- nrow(x$d.vals)
   n.lam <- ncol(x$d.vals)
   d.vals <- numeric(length = (n.trt * n.lam))
-  for (i in 1:(nrow(x$d.vals))) {
-    d.vals[((i-1) * n.lam + 1):(i * n.lam)] <- x$d.vals[i,]
+  if (!cv.vals) {
+    for (i in 1:(nrow(x$d.vals))) {
+      d.vals[((i-1) * n.lam + 1):(i * n.lam)] <- x$d.vals[i,]
+    }
+  } else {
+    vals <- apply(x$d.vals.cv, c(2,3), function(x) mean(x))
+    for (i in 1:(nrow(x$d.vals))) {
+      d.vals[((i-1) * n.lam + 1):(i * n.lam)] <- vals[i,]
+    }
   }
   
   if(inherits(x$model, "msgl")) {
