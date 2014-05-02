@@ -24,7 +24,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
     gw <- numeric(length = n.groups); gw[GG.nonzero] <- sqrt(K * (1 - group.sparsity) * (length(GG.nonzero)))
     pw <- array(1, dim = c(K, nvars)); pw[,groups.nonzero] <- 0
     msgl.lambda <- msgl.lambda.seq(x, A, sampleWeights = weights, groupWeights = gw, grouping = grouping,
-                                   parameterWeights = pw, alpha = alpha, d = 100, lambda.min = 1e-1)
+                                   parameterWeights = pw, alpha = alpha, d = 100, lambda.min = 1)
     model <- msgl(x, classes = A, sampleWeights = weights, groupWeights = gw, grouping = grouping,
                   parameterWeights = pw, alpha = alpha, lambda = msgl.lambda, algorithm.config = config, ...)
   }
