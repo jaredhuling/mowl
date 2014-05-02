@@ -135,6 +135,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
               values = values,
               misclass = misclass,
               d.vals = d.vals,
+              d.vals.cv = d.vals.cv,
               class.lambda.idx = class.ind,
               value.lambda.idx = value.ind,
               aic.lambda.idx = aic.ind)
