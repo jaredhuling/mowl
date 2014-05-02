@@ -171,6 +171,7 @@ plot.owlfit <- function(x, log.scale = FALSE, cv.vals = FALSE) {
     }
   } else {
     vals <- apply(x$d.vals.cv, c(2,3), function(x) mean(x))
+    vals[is.nan(vals)] <- NA
     for (i in 1:(nrow(x$d.vals))) {
       d.vals[((i-1) * n.lam + 1):(i * n.lam)] <- vals[i,]
     }
