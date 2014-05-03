@@ -1,6 +1,6 @@
 
 mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds, 
-                     seed = 123, oracle = NULL, verbose = FALSE, fused = FALSE, lambda = NULL, lambda.min = 1e-2,
+                     seed = 123, oracle = NULL, verbose = FALSE, fused = FALSE, lambda = NULL, lambda.min = 1e-2, no.lasso = FALSE,
                      alpha = if(is.null(groups)) {1} else {0.5}, threshold = 0, ...) {
   
   thiscall <- match.call()
@@ -23,6 +23,7 @@ mowl.fit <- function(x, y, A, groups = NULL, group.sparsity = 0, nfolds,
     
     gw <- numeric(length = n.groups); gw[GG.nonzero] <- sqrt(K * (1 - group.sparsity) * (length(GG.nonzero)))
     pw <- array(1, dim = c(K, nvars)); pw[,groups.nonzero] <- 0
+    if (no.lasso) pw <- pw * 0
     msgl.lambda <- msgl.lambda.seq(x, A, sampleWeights = weights, groupWeights = gw, grouping = grouping,
                                    parameterWeights = pw, alpha = alpha, d = 100, lambda.min = lambda.min)
     model <- msgl(x, classes = A, sampleWeights = weights, groupWeights = gw, grouping = grouping,
