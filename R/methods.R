@@ -179,10 +179,10 @@ plot.owlfit <- function(x, log.scale = FALSE, cv.vals = FALSE) {
   
   if(inherits(x$model, "msgl")) {
     dfs <- df.msgl(x$model)
-    trt.names <- dimnames(mod21g$model$beta[[1]])[[1]]
+    trt.names <- dimnames(x$model$beta[[1]])[[1]]
   } else {
     dfs <- x$model$df
-    trt.names <- names(mod21$model$beta)
+    trt.names <- names(x$model$beta)
   }
   
   if (log.scale) {
