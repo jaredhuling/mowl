@@ -2,7 +2,7 @@
 value.func <- function(A, predicted, y) {
   A.char <- levels(A)[A]
   ind <- 1 * (A.char == predicted)
-  sum(3 * y * ind) / length(A)
+  sum(length(A.char) * y * ind) / length(A)
 }
 
 
