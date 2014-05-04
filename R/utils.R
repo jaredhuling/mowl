@@ -143,6 +143,7 @@ patientEffectData2d3 <- function(obj, x, patient.ind, lam.ind,
         c.betas.nz <- c.betas[nz.ind]
         col.ind <- match(names(c.betas.nz), colnames(x))
         effects.tmp <- c(obj$model$a0[i, lam.ind], x[patient.ind[l], col.ind] * c.betas.nz)
+        names(effects.tmp)[1] <- "Intercept"
         effects.tmp <- effects.tmp[order(abs(effects.tmp), decreasing = TRUE)]
         ret[[i]] <- effects.tmp
       }
@@ -156,6 +157,7 @@ patientEffectData2d3 <- function(obj, x, patient.ind, lam.ind,
         c.betas.nz <- c.betas[nz.ind]
         col.ind <- match(names(c.betas.nz), colnames(x))
         effects.tmp <- c(full.beta[i,1], x[patient.ind[l], col.ind] * c.betas.nz)
+        names(effects.tmp)[1] <- "Intercept"
         effects.tmp <- effects.tmp[order(abs(effects.tmp), decreasing = TRUE)]
         ret[[i]] <- effects.tmp
       }
