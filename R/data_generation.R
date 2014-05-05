@@ -1,6 +1,7 @@
 simulateOwlData <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y = 1,
                             outcome.type = c("numeric", "binary", "misspecified.binary"), 
-                            num.factors = 0L, factor.levels = rep(3, num.factors)) {
+                            num.factors = 0L, factor.levels = rep(3, num.factors),
+                            misspecified = FALSE) {
   
   outcome.type <- match.arg(outcome.type)
   num.contin <- p - num.factors
@@ -26,15 +27,22 @@ simulateOwlData <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y 
   
   treatment.effects <- genTreatmentEffects(x, A, rules)
   
+  if (misspecified) {
+    y.main.eff <- rnorm(n * length(true.beta), ncol = length(true.beta)) %*% true.beta
+  } else {
+    y.main.eff <- x[,3:(3 + length(true.beta) - 1)] %*% true.beta
+  }
+  
+  
   if (outcome.type == "binary") {
-    log.p.ratio <- rowSums(treatment.effects) + x[,3:(3 + length(true.beta) - 1)] %*% true.beta
+    log.p.ratio <- rowSums(treatment.effects) + y.main.eff
     prob.y.1 <- 1 / (1 + exp(-log.p.ratio))
     y <- rbinom(n, 1, prob = prob.y.1)
   } else if (outcome.type == "numeric") {
-    y <- rnorm(n, sd = sd.y) + rowSums(treatment.effects) + x[,3:(3 + length(true.beta) - 1)] %*% true.beta
+    y <- rnorm(n, sd = sd.y) + rowSums(treatment.effects) + y.main.eff
     y <- y + abs(min(y))
   } else if (outcome.type == "misspecified.binary"){
-    exp.p.ratio <- rowSums(treatment.effects) + x[,3:(3 + length(true.beta) - 1)] %*% true.beta + 1
+    exp.p.ratio <- rowSums(treatment.effects) + y.main.eff + 1
     prob.y.1 <- log(exp.p.ratio + sign(min(exp.p.ratio)) * min(exp.p.ratio) + 1) / (1 + log(exp.p.ratio + sign(min(exp.p.ratio)) * min(exp.p.ratio) + 1))
     y <- rbinom(n, 1, prob = prob.y.1)
   }
