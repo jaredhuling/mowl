@@ -28,7 +28,7 @@ simulateOwlData <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y 
   treatment.effects <- genTreatmentEffects(x, A, rules)
   
   if (misspecified) {
-    y.main.eff <- matrix(rnorm(n * length(true.beta)), ncol = length(true.beta)) %*% true.beta
+    y.main.eff <- (matrix(rnorm(n * length(true.beta)), ncol = length(true.beta)) %*% true.beta) * rowSums(treatment.effects)
   } else {
     y.main.eff <- x[,3:(3 + length(true.beta) - 1)] %*% true.beta
   }
@@ -108,7 +108,7 @@ simulateOwlData2 <- function(n, p, rules, true.beta, interaction, sd.x = 1, sd.y
   treatment.effects <- genTreatmentEffects2(x, A, rules)
   
   if (misspecified) {
-    y.main.eff <- matrix(rnorm(n * length(true.beta)), ncol = length(true.beta)) %*% true.beta
+    y.main.eff <- (matrix(rnorm(n * length(true.beta)), ncol = length(true.beta)) %*% true.beta) * rowSums(treatment.effects)
   } else {
     y.main.eff <- x[,3:(3 + length(true.beta) - 1)] %*% true.beta
   }
